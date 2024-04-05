@@ -1,6 +1,8 @@
 # cdm-etl
 
-The Climate Data Model - Extract Transform Load (CDM-ETL) component can be used with any Climate Data Management System (CDMS) that implements the Climate Data Model API that is under development by the WMO Task Team on Climate Data Model (TT-CDM). See [OpenCDMS](http://github.com/opencdms/opencdms) for a Reference Implementation of the Climate Data Model Standard and Climate Data Model API.
+**The first version of this componet is expect to be ready by June 2024**
+
+The Climate Data Model - Extract Transform Load (CDM-ETL) component can be used with any Climate Data Management System (CDMS) that implements the Climate Data Model API that is under development by the WMO Task Team on Climate Data Model (TT-CDM). See [OpenCDMS](http://github.com/opencdms/opencdms) (also under development) for a Reference Implementation of the Climate Data Model Standard and Climate Data Model API.
 
 CDM-ETL allow you to:
 1. **Extact** data from any system implementing the CDM APIs

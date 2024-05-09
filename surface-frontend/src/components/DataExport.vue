@@ -9,7 +9,35 @@
     :text="request_error_message" 
     closable
     type="error"
-  ></v-alert>  
+  ></v-alert>
+
+  <v-dialog v-model="dialog_del" width="35%">
+    <v-card class="text-center">
+      <v-card-title class="text-h5">
+        Remove Series
+      </v-card-title>
+      <v-card-text class="ml-2">
+          <v-form>
+            <v-row>
+              <v-col class="text-center" cols="6">
+                 <span>{{getStationTitle(current_item.station)}}</span>
+              </v-col>       
+              <v-col class="text-center" cols="6">
+                 <span>{{current_item.variable.name}}</span>
+              </v-col>                      
+            </v-row>
+          </v-form>
+      </v-card-text>             
+      <v-card-actions class="ml-2">
+        <v-btn width="50%" variant="flat" color="grey" @click="dialog_del = false">
+          Cancel
+        </v-btn>
+        <v-btn width="50%" variant="flat" color="error" @click="dialog_del = false; removeSeries()">
+          Remove
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>  
 
   <form>
     <h2 class="ma-3">Station Filters</h2>
@@ -79,6 +107,8 @@
           :item-title="getStationTitle"
           item-value="id"
           clearable
+          :persistent-hint="true"
+          hint="*Required"
         ></v-autocomplete>
       </v-col>     
       <v-col class="text-center" cols="4">
@@ -89,6 +119,8 @@
           item-title="name"
           item-value="id"
           clearable
+          :persistent-hint="true"
+          hint="*Required"
         ></v-autocomplete>
       </v-col>           
     </v-row>
@@ -98,6 +130,7 @@
           color="primary"
           append-icon="mdi-magnify-plus"
           @click="addToSeries"
+          :disabled="$v.selected.$invalid"
         > Add Series </v-btn>
       </v-col>   
     </v-row>
@@ -118,7 +151,29 @@
         :items="data_table.series"
         height="400"
         item-value="name"
-      ></v-data-table>
+      >
+        <template v-slot:item.percentage="{ item }">
+          <div class="d-flex justify-center">
+            <v-card
+              width="25%"
+              :color="getColor
+              (item.percentage)"
+              class="text-center"
+            >
+              {{item.percentage}} %
+            </v-card>            
+          </div> 
+        </template>      
+        <template v-slot:item.action="{ item }">
+          <v-tooltip location="bottom" text="Remove Series">
+            <template v-slot:activator="{ props }">
+              <v-btn v-bind="props" @click="dialog_del=true; current_item=item" size="small"  elevation="0" icon >
+                <v-icon color="red" >mdi-delete</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </template>
+      </v-data-table>
     </v-row>
 
     <v-row class="mx-3" dense justify="start">
@@ -238,7 +293,6 @@
         > Generate CSV </v-btn>
       </v-col>   
     </v-row>
-
   </form>
 </template>
 
@@ -247,6 +301,41 @@
   import { ref, watch, onMounted, computed } from 'vue';
   import moment from 'moment';
   import axios from 'axios';
+
+  import { required } from '@vuelidate/validators';
+  import { useVuelidate } from '@vuelidate/core';
+
+  const dialog_del = ref(false)
+        
+
+  const station = ref(null)
+  const variable = ref(null)
+
+  const filter = ref({
+    byDistrict: false,
+    isActive: false,
+    isAutomatic: false,
+  });
+
+  const selected = ref({
+    station: null,
+    variable: null,
+    profile: null,
+    district: null,
+    watershed: null,
+    source: null,
+  });  
+
+
+  const rules = {
+    selected: {
+      station: { required },
+      variable: { required },
+    },
+  };
+
+  const $v = useVuelidate(rules, { selected });
+
 
   const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
 
@@ -288,6 +377,7 @@
     }).catch(err => {
       request_error.value = true;
       request_error_message.value = err.response.data.detail;
+      console.log(err)
     });;
 
     await axios.get(`${BASE_URL}/api/stations_variables/?format=json`, {
@@ -299,6 +389,7 @@
     }).catch(err => {
       request_error.value = true;
       request_error_message.value = err.response.data.detail;
+      console.log(err)
     });;
 
     await axios.get(`${BASE_URL}/api/administrative_regions/?format=json`, {
@@ -310,6 +401,7 @@
     }).catch(err => {
       request_error.value = true;
       request_error_message.value = err.response.data.detail;
+      console.log(err)
     });;
 
     await axios.get(`${BASE_URL}/api/watersheds/?format=json`, {
@@ -321,6 +413,7 @@
     }).catch(err => {
       request_error.value = true;
       request_error_message.value = err.response.data.detail;
+      console.log(err)
     });;
 
     await axios.get(`${BASE_URL}/api/station_profiles/?format=json`, {
@@ -332,6 +425,7 @@
     }).catch(err => {
       request_error.value = true;
       request_error_message.value = err.response.data.detail;
+      console.log(err)
     });
 
     loading.value = false;
@@ -345,37 +439,29 @@
     {value: 4, text: "Yearly summary", source: "yearly_summary"},
   ])
 
-  const filter = ref({
-    byDistrict: false,
-    isActive: false,
-    isAutomatic: false,
-  });
 
-  const selected = ref({
-    station: null,
-    variable: null,
-    profile: null,
-    district: null,
-    watershed: null,
-    source: null,
-  });  
-
+  const current_item = ref(null)
 
   const data_table = ref({
     headers: [
       { title: 'Station',
-        align: 'start',
+        align: 'center',
         key: 'station',
         value: item => getStationTitle(item.station)
       },
       { title: 'Variable',
-        align: 'end',
+        align: 'center',
         key: 'variable',
         value: 'variable.name'
       },
       {
+        title: 'Available Data',
+        align: 'center',
+        key: 'percentage',
+      },      
+      {
         title: 'Action',
-        align: 'end',
+        align: 'center',
         key: 'action'
       },
     ],
@@ -397,7 +483,6 @@
   const final_date_menu = false;
   const final_time_menu = false;
 
-  
   const filteredStationList = computed(() => {
     let filteredStations = stationList.value
 
@@ -434,6 +519,10 @@
   });
 
   const filteredVariableList = computed(() => {
+    if (!selected.value.station){
+      return []
+    }
+
     let filteredStationVariable = stationVariableList.value
     let filteredVariables = variableList.value
 
@@ -480,7 +569,7 @@
     return null;
   }
 
-  const dictExists = (arr, obj) => {
+  const dictExists = (arr, obj, keys) => {
     for (var i = 0; i < arr.length; i++) {
       if (JSON.stringify(arr[i]) === JSON.stringify(obj)) {
         return true;
@@ -488,6 +577,23 @@
     }
     return false;
   }
+
+  const dictExistsKeys = (arr, obj, keys) => {
+    for (var i = 0; i < arr.length; i++) {
+      let found = true;
+      for (var j = 0; j < keys.length; j++) {
+        const key = keys[j];
+        if (JSON.stringify(arr[i][key]) !== JSON.stringify(obj[key])) {
+          found = false;
+          break;
+        }
+      }
+      if (found) {
+        return true;
+      }
+    }
+    return false;
+  } 
 
   const addToSeries = () => {
     request_warning.value = false
@@ -499,18 +605,28 @@
     let new_entry = {
       station: station,
       variable: variable,
-      action: "Actions Here"
+      action: "Actions Here",
+      percentage: Math.round(Math.random() * 1000)/10
     }
 
-    if(!dictExists(data_table.value.series, new_entry)){
+    if(!dictExistsKeys(data_table.value.series, new_entry, ['station', 'variable'])){
       data_table.value.series.push(new_entry);
       clearSelected();
-    }
+    }    
     else{
       request_warning.value = true
       request_warning_message.value = "Series already in data table!"
     }
   };
+
+  const removeSeries = () => {
+    let station_id = current_item.value.station.id
+    let variable_id = current_item.value.variable.id
+
+    data_table.value.series = data_table.value.series.filter(
+      series => !((series.station.id==station_id) & (series.variable.id==variable_id))
+    );
+  }
 
   const clearDistrict = (filter, selected) => {
     if (filter.byDistrict){
@@ -535,8 +651,19 @@
 
   const formatDate = (date,fdate) => {
     fdate.value = moment(date.value).format('YYYY-MM-DD')
-  };  
+  };
 
+  const getColor = (percent) =>{
+    var max_red = [240, 128, 128];
+    var max_green = [144, 238, 144];
+
+    var color = [];
+    for (var i = 0; i < 3; i++) {
+        color[i] = Math.round(max_red[i] + (max_green[i] - max_red[i]) * (percent / 100));
+    }
+
+    return  'rgb('+color[0]+','+color[1]+','+color[2]+')'
+  }
 </script>
 
 <style scoped>

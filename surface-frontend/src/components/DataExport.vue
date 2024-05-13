@@ -20,10 +20,12 @@
           <v-form>
             <v-row>
               <v-col class="text-center" cols="6">
-                 <span>{{getStationTitle(current_item.station)}}</span>
+                <h3>Station</h3>
+                <span>{{getStationTitle(current_item.station)}}</span>
               </v-col>       
               <v-col class="text-center" cols="6">
-                 <span>{{current_item.variable.name}}</span>
+                <h3>Variable</h3>
+                <span>{{current_item.variable.name}}</span>
               </v-col>                      
             </v-row>
           </v-form>
@@ -107,7 +109,7 @@
           :item-title="getStationTitle"
           item-value="id"
           clearable
-          :persistent-hint="true"
+          persistent-hint
           hint="*Required"
         ></v-autocomplete>
       </v-col>     
@@ -119,7 +121,7 @@
           item-title="name"
           item-value="id"
           clearable
-          :persistent-hint="true"
+          persistent-hint
           hint="*Required"
         ></v-autocomplete>
       </v-col>           
@@ -144,7 +146,9 @@
         type="warning"
       ></v-alert>
     </v-row>
+  </form>
 
+  <form>
     <v-row class="ma-3">
       <v-data-table
         :headers="data_table.headers"
@@ -156,8 +160,7 @@
           <div class="d-flex justify-center">
             <v-card
               width="25%"
-              :color="getColor
-              (item.percentage)"
+              :color="getColor(item.percentage)"
               class="text-center"
             >
               {{item.percentage}} %
@@ -167,7 +170,13 @@
         <template v-slot:item.action="{ item }">
           <v-tooltip location="bottom" text="Remove Series">
             <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" @click="dialog_del=true; current_item=item" size="small"  elevation="0" icon >
+              <v-btn 
+                v-bind="props"
+                size="small"
+                elevation="0"
+                icon
+                @click="dialog_del=true; current_item=item"                
+              >
                 <v-icon color="red" >mdi-delete</v-icon>
               </v-btn>
             </template>
@@ -175,23 +184,28 @@
         </template>
       </v-data-table>
     </v-row>
+  </form>
 
+  <form>
     <v-row class="mx-3" dense justify="start">
       <v-col class="text-center" cols="4">
         <v-select
-          v-model="selected.source"
+          v-model="selected.data_source"
           item-title="text"                
           :items="data_sources"
           label="Data Source"
           return-object
+          clearable
+          persistent-hint
+          hint="*Required"
         ></v-select>
-      </v-col>      
-      <v-col  class="text-center"  cols="4">
-        <v-menu
-          location="end"
-          transition="scale-transition"
-          :close-on-content-click="false"
-        >
+      </v-col>
+        <v-col class="text-center"  cols="4" v-if="selected.data_source">
+          <v-menu
+            location="end"
+            transition="scale-transition"
+            :close-on-content-click="false"
+          >
             <template v-slot:activator="{ props }">
               <v-text-field
                 v-bind="props"
@@ -206,90 +220,100 @@
               color="primary"
               v-model="initial_date"
             ></v-date-picker>  
-        </v-menu>
-      </v-col>
-      <v-col cols="4">
-        <v-menu
-          location="end"
-          transition="scale-transition"
-          :close-on-content-click="false"
-        >
-          <template v-slot:activator="{ props }">
-            <v-text-field
-              v-bind="props"
-              v-model="ffinal_date"
-              label="Final date"
-              prepend-inner-icon="mdi-calendar"
-              @input="updateDate(ffinal_date, final_date)"
-            ></v-text-field>
-          </template>
-
-          <v-date-picker
-            color="primary"
-            v-model="final_date"
-          ></v-date-picker>  
-        </v-menu>
-      </v-col>         
-    </v-row>
-    <v-row class="mx-3" dense justify="start">
-      <v-col class="text-center"  cols="4">
-      </v-col>
-
-      <v-col class="text-center" cols="4">
-        <v-menu
-          location="end"
-          transition="scale-transition"
-          :close-on-content-click="false"        
-        >
+          </v-menu>
+        </v-col>
+        <v-col class="text-center"  cols="4" v-if="selected.data_source">
+          <v-menu
+            location="end"
+            transition="scale-transition"
+            :close-on-content-click="false"
+          >
             <template v-slot:activator="{ props }">
               <v-text-field
                 v-bind="props"
-                label="Initial time"
-                v-model="initial_time"
-                prepend-inner-icon="mdi-clock"
+                v-model="ffinal_date"
+                label="Final date"
+                prepend-inner-icon="mdi-calendar"
+                @input="updateDate(ffinal_date, final_date)"
               ></v-text-field>
             </template>
 
-            <v-time-picker
+            <v-date-picker
               color="primary"
-              v-model="initial_time"
-            ></v-time-picker>
-        </v-menu>
-      </v-col>  
-             
-      <v-col class="text-center"  cols="4">
-        <v-menu
-          location="end"
-          transition="scale-transition"
-          :close-on-content-click="false"        
-        >
-            <template v-slot:activator="{ props }">
-              <v-text-field
-                v-bind="props"
-                label="Final time"
-                v-model="final_time"
-                prepend-inner-icon="mdi-clock"
-              ></v-text-field>
-            </template>
-
-            <v-time-picker
-              color="primary"
-              v-model="final_time"
-            ></v-time-picker>
-        </v-menu>
-      </v-col>        
+              v-model="final_date"
+            ></v-date-picker>  
+            </v-menu>
+        </v-col>
     </v-row>
+      <div v-if="selected.data_source">
+        <v-row
+          class="mx-3"
+          dense
+          justify="start"
+          v-if="['raw_data', 'hourly_summary'].includes(selected.data_source.source)"
+        >
+            <v-col class="text-center"  cols="4">
+            </v-col>
+
+            <v-col class="text-center" cols="4">
+              <v-menu
+                location="end"
+                transition="scale-transition"
+                :close-on-content-click="false"        
+              >
+                  <template v-slot:activator="{ props }">
+                    <v-text-field
+                      v-bind="props"
+                      label="Initial time"
+                      v-model="initial_time"
+                      prepend-inner-icon="mdi-clock"
+                    ></v-text-field>
+                  </template>
+
+                  <v-time-picker
+                    color="primary"
+                    v-model="initial_time"
+                  ></v-time-picker>
+              </v-menu>
+            </v-col>  
+                   
+            <v-col class="text-center"  cols="4">
+              <v-menu
+                location="end"
+                transition="scale-transition"
+                :close-on-content-click="false"        
+              >
+                  <template v-slot:activator="{ props }">
+                    <v-text-field
+                      v-bind="props"
+                      label="Final time"
+                      v-model="final_time"
+                      prepend-inner-icon="mdi-clock"
+                    ></v-text-field>
+                  </template>
+
+                  <v-time-picker
+                    color="primary"
+                    v-model="final_time"
+                  ></v-time-picker>
+              </v-menu>
+            </v-col>
+        </v-row>
+      </div>
     <v-row class="mx-3" dense justify="end">
       <v-col align="end" cols="2">
         <v-btn
           color="primary"
           append-icon="mdi-database-search"
+          @click="consultData"
+          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
         > Consult Data </v-btn>
       </v-col>  
       <v-col align="end" cols="2">
         <v-btn
           color="primary"
           append-icon="mdi-send"
+          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
         > Generate CSV </v-btn>
       </v-col>   
     </v-row>
@@ -323,7 +347,7 @@
     profile: null,
     district: null,
     watershed: null,
-    source: null,
+    data_source: null,
   });  
 
 
@@ -335,6 +359,14 @@
   };
 
   const $v = useVuelidate(rules, { selected });
+
+  const rules_query = {
+    selected: {
+      data_table: { required },
+    },
+  };  
+
+  const $v_query = useVuelidate(rules_query, { selected });
 
 
   const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
@@ -556,7 +588,7 @@
       profile: null,
       district: null,
       watershed: null,
-      source: null,
+      data_source: selected.value.data_source,
     }
   }
 
@@ -606,7 +638,8 @@
       station: station,
       variable: variable,
       action: "Actions Here",
-      percentage: Math.round(Math.random() * 1000)/10
+      // percentage: Math.round(Math.random() * 1000)/10
+      percentage: null,
     }
 
     if(!dictExistsKeys(data_table.value.series, new_entry, ['station', 'variable'])){
@@ -625,6 +658,12 @@
 
     data_table.value.series = data_table.value.series.filter(
       series => !((series.station.id==station_id) & (series.variable.id==variable_id))
+    );
+  }
+
+  const consultData = () => {
+    data_table.value.series.forEach(
+      series => series.percentage = Math.round(Math.random() * 1000)/10
     );
   }
 
@@ -654,6 +693,10 @@
   };
 
   const getColor = (percent) =>{
+    if (percent === null) {
+      return 'rgb(0,0,0)'
+    }
+
     var max_red = [240, 128, 128];
     var max_green = [144, 238, 144];
 

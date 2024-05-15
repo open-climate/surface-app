@@ -149,44 +149,6 @@
   </form>
 
   <form>
-    <v-row class="ma-3">
-      <v-data-table
-        :headers="data_table.headers"
-        :items="data_table.series"
-        height="400"
-        item-value="name"
-      >
-        <template v-slot:item.percentage="{ item }">
-          <div class="d-flex justify-center">
-            <v-card
-              width="25%"
-              :color="getColor(item.percentage)"
-              class="text-center"
-            >
-              {{item.percentage}} %
-            </v-card>            
-          </div> 
-        </template>      
-        <template v-slot:item.action="{ item }">
-          <v-tooltip location="bottom" text="Remove Series">
-            <template v-slot:activator="{ props }">
-              <v-btn 
-                v-bind="props"
-                size="small"
-                elevation="0"
-                icon
-                @click="dialog_del=true; current_item=item"                
-              >
-                <v-icon color="red" >mdi-delete</v-icon>
-              </v-btn>
-            </template>
-          </v-tooltip>
-        </template>
-      </v-data-table>
-    </v-row>
-  </form>
-
-  <form>
     <v-row class="mx-3" dense justify="start">
       <v-col class="text-center" cols="4">
         <v-select
@@ -318,6 +280,44 @@
       </v-col>   
     </v-row>
   </form>
+
+  <form>
+    <v-row class="ma-3">
+      <v-data-table
+        :headers="data_table.headers"
+        :items="data_table.series"
+        height="400"
+        item-value="name"
+      >
+        <template v-slot:item.percentage="{ item }">
+          <div class="d-flex justify-center">
+            <v-card
+              width="25%"
+              :color="getColor(item.percentage)"
+              class="text-center"
+            >
+              {{item.percentage}} %
+            </v-card>            
+          </div> 
+        </template>      
+        <template v-slot:item.action="{ item }">
+          <v-tooltip location="bottom" text="Remove Series">
+            <template v-slot:activator="{ props }">
+              <v-btn 
+                v-bind="props"
+                size="small"
+                elevation="0"
+                icon
+                @click="dialog_del=true; current_item=item"                
+              >
+                <v-icon color="red" >mdi-delete</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </template>
+      </v-data-table>
+    </v-row>
+  </form>
 </template>
 
 <script setup>
@@ -330,8 +330,7 @@
   import { useVuelidate } from '@vuelidate/core';
 
   const dialog_del = ref(false)
-        
-
+    
   const station = ref(null)
   const variable = ref(null)
 
@@ -386,81 +385,92 @@
   const stationProfileList = ref([])
 
   onMounted( async () => {
-    loading.value = true;
+    // loading.value = true;
 
-    await axios.get(`${BASE_URL}/api/stations/?format=json`, {
-      headers: {
-        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-      }
-    }).then((response) => {
-      stationList.value = response.data.results
-    }).catch(err => {
-      request_error.value = true;
-      request_error_message.value = err.response.data.detail;
-      console.log(err)
-    });;
+    // await axios.get(`${BASE_URL}/api/stations/?format=json`, {
+    //   headers: {
+    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+    //   }
+    // }).then((response) => {
+    //   stationList.value = response.data.results
+    // }).catch(err => {
+    //   request_error.value = true;
+    //   request_error_message.value = err.response.data.detail;
+    //   console.log(err)
+    // });;
 
-    await axios.get(`${BASE_URL}/api/variables/?format=json`, {
-      headers: {
-        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-      }
-    }).then((response) => {
-      variableList.value = response.data.results
-    }).catch(err => {
-      request_error.value = true;
-      request_error_message.value = err.response.data.detail;
-      console.log(err)
-    });;
+    await fetchData(`${BASE_URL}/api/stations/?format=json`, stationList)
 
-    await axios.get(`${BASE_URL}/api/stations_variables/?format=json`, {
-      headers: {
-        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-      }
-    }).then((response) => {
-      stationVariableList.value = response.data.results
-    }).catch(err => {
-      request_error.value = true;
-      request_error_message.value = err.response.data.detail;
-      console.log(err)
-    });;
+    // await axios.get(`${BASE_URL}/api/variables/?format=json`, {
+    //   headers: {
+    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+    //   }
+    // }).then((response) => {
+    //   variableList.value = response.data.results
+    // }).catch(err => {
+    //   request_error.value = true;
+    //   request_error_message.value = err.response.data.detail;
+    //   console.log(err)
+    // });
 
-    await axios.get(`${BASE_URL}/api/administrative_regions/?format=json`, {
-      headers: {
-        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-      }
-    }).then((response) => {
-      stationDistrictList.value = response.data.results
-    }).catch(err => {
-      request_error.value = true;
-      request_error_message.value = err.response.data.detail;
-      console.log(err)
-    });;
+    await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
 
-    await axios.get(`${BASE_URL}/api/watersheds/?format=json`, {
-      headers: {
-        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-      }
-    }).then((response) => {
-      stationWatershedList.value = response.data.results
-    }).catch(err => {
-      request_error.value = true;
-      request_error_message.value = err.response.data.detail;
-      console.log(err)
-    });;
+    // await axios.get(`${BASE_URL}/api/stations_variables/?format=json`, {
+    //   headers: {
+    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+    //   }
+    // }).then((response) => {
+    //   stationVariableList.value = response.data.results
+    // }).catch(err => {
+    //   request_error.value = true;
+    //   request_error_message.value = err.response.data.detail;
+    //   console.log(err)
+    // });;
 
-    await axios.get(`${BASE_URL}/api/station_profiles/?format=json`, {
-      headers: {
-        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-      }
-    }).then((response) => {
-      stationProfileList.value = response.data.results
-    }).catch(err => {
-      request_error.value = true;
-      request_error_message.value = err.response.data.detail;
-      console.log(err)
-    });
+    await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
 
-    loading.value = false;
+    // await axios.get(`${BASE_URL}/api/administrative_regions/?format=json`, {
+    //   headers: {
+    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+    //   }
+    // }).then((response) => {
+    //   stationDistrictList.value = response.data.results
+    // }).catch(err => {
+    //   request_error.value = true;
+    //   request_error_message.value = err.response.data.detail;
+    //   console.log(err)
+    // });;
+
+    await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
+
+
+    // await axios.get(`${BASE_URL}/api/watersheds/?format=json`, {
+    //   headers: {
+    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+    //   }
+    // }).then((response) => {
+    //   stationWatershedList.value = response.data.results
+    // }).catch(err => {
+    //   request_error.value = true;
+    //   request_error_message.value = err.response.data.detail;
+    //   console.log(err)
+    // });;
+
+    await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
+
+    // await axios.get(`${BASE_URL}/api/station_profiles/?format=json`, {
+    //   headers: {
+    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+    //   }
+    // }).then((response) => {
+    //   stationProfileList.value = response.data.results
+    // }).catch(err => {
+    //   request_error.value = true;
+    //   request_error_message.value = err.response.data.detail;
+    //   console.log(err)
+    // });
+
+    await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)    
   });
 
   const data_sources = ref([
@@ -470,6 +480,35 @@
     {value: 3, text: "Monthly summary", source: "monthly_summary"},
     {value: 4, text: "Yearly summary", source: "yearly_summary"},
   ])
+
+
+  const fetchData = async (url, variable) => {
+    loading.value = true
+
+    let nextPage = new URL(url);
+    
+    nextPage = `${BASE_URL}${nextPage.pathname}${nextPage.search}`
+    while (nextPage) {
+      await axios.get(nextPage, {
+        headers: {
+          'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+        }
+      }).then(response => {
+        variable.value.push(...response.data.results);
+        nextPage = response.data.next
+        if (nextPage) {
+          nextPage = new URL(nextPage);
+          nextPage = `${BASE_URL}${nextPage.pathname}${nextPage.search}`
+        }
+      }).catch(err => {
+        request_error.value = true;
+        request_error_message.value = err.response.data.detail;
+        console.log(err)
+      });
+    }
+
+    loading.value = false
+  };
 
 
   const current_item = ref(null)
@@ -571,7 +610,7 @@
       )      
     }
     return filteredVariables;
-  });  
+  });   
 
   watch(initial_date, () => {
     formatDate(initial_date, finitial_date)
@@ -661,10 +700,33 @@
     );
   }
 
-  const consultData = () => {
+  const consultDataRandom = () => {
     data_table.value.series.forEach(
       series => series.percentage = Math.round(Math.random() * 1000)/10
     );
+  }
+
+
+  const consultData = async () => {
+    loading.value = true;
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/available_data/`,
+        // JSON.stringify(data_table),
+        {
+          headers: {
+            // 'Content-Type': 'application/json',          
+            'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+          }
+        }
+      );
+      console.log(response.data);
+    } catch (err) {
+      request_error.value = true;
+      request_error_message.value = err.response.data.detail;
+      console.error(err);
+    }
+    loading.value = false;
   }
 
   const clearDistrict = (filter, selected) => {

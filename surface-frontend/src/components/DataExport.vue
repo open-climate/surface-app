@@ -245,19 +245,19 @@
                 transition="scale-transition"
                 :close-on-content-click="false"        
               >
-                  <template v-slot:activator="{ props }">
-                    <v-text-field
-                      v-bind="props"
-                      label="Final time"
-                      v-model="final_time"
-                      prepend-inner-icon="mdi-clock"
-                    ></v-text-field>
-                  </template>
-
-                  <v-time-picker
-                    color="primary"
+                <template v-slot:activator="{ props }">
+                  <v-text-field
+                    v-bind="props"
+                    label="Final time"
                     v-model="final_time"
-                  ></v-time-picker>
+                    prepend-inner-icon="mdi-clock"
+                  ></v-text-field>
+                </template>
+
+                <v-time-picker
+                  color="primary"
+                  v-model="final_time"
+                ></v-time-picker>
               </v-menu>
             </v-col>
         </v-row>
@@ -269,7 +269,7 @@
           append-icon="mdi-database-search"
           @click="consultData"
           :disabled="(!selected.data_source) || (data_table.series.length === 0)"
-        > Consult Data </v-btn>
+        > Check Data Availability </v-btn>
       </v-col>  
       <v-col align="end" cols="2">
         <v-btn
@@ -310,7 +310,7 @@
                 icon
                 @click="dialog_del=true; current_item=item"                
               >
-                <v-icon color="red" >mdi-delete</v-icon>
+                <v-icon color="red">mdi-delete</v-icon>
               </v-btn>
             </template>
           </v-tooltip>
@@ -349,7 +349,6 @@
     data_source: null,
   });  
 
-
   const rules = {
     selected: {
       station: { required },
@@ -358,15 +357,6 @@
   };
 
   const $v = useVuelidate(rules, { selected });
-
-  const rules_query = {
-    selected: {
-      data_table: { required },
-    },
-  };  
-
-  const $v_query = useVuelidate(rules_query, { selected });
-
 
   const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
 
@@ -385,91 +375,15 @@
   const stationProfileList = ref([])
 
   onMounted( async () => {
-    // loading.value = true;
-
-    // await axios.get(`${BASE_URL}/api/stations/?format=json`, {
-    //   headers: {
-    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-    //   }
-    // }).then((response) => {
-    //   stationList.value = response.data.results
-    // }).catch(err => {
-    //   request_error.value = true;
-    //   request_error_message.value = err.response.data.detail;
-    //   console.log(err)
-    // });;
-
     await fetchData(`${BASE_URL}/api/stations/?format=json`, stationList)
-
-    // await axios.get(`${BASE_URL}/api/variables/?format=json`, {
-    //   headers: {
-    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-    //   }
-    // }).then((response) => {
-    //   variableList.value = response.data.results
-    // }).catch(err => {
-    //   request_error.value = true;
-    //   request_error_message.value = err.response.data.detail;
-    //   console.log(err)
-    // });
 
     await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
 
-    // await axios.get(`${BASE_URL}/api/stations_variables/?format=json`, {
-    //   headers: {
-    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-    //   }
-    // }).then((response) => {
-    //   stationVariableList.value = response.data.results
-    // }).catch(err => {
-    //   request_error.value = true;
-    //   request_error_message.value = err.response.data.detail;
-    //   console.log(err)
-    // });;
-
     await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
-
-    // await axios.get(`${BASE_URL}/api/administrative_regions/?format=json`, {
-    //   headers: {
-    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-    //   }
-    // }).then((response) => {
-    //   stationDistrictList.value = response.data.results
-    // }).catch(err => {
-    //   request_error.value = true;
-    //   request_error_message.value = err.response.data.detail;
-    //   console.log(err)
-    // });;
 
     await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
 
-
-    // await axios.get(`${BASE_URL}/api/watersheds/?format=json`, {
-    //   headers: {
-    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-    //   }
-    // }).then((response) => {
-    //   stationWatershedList.value = response.data.results
-    // }).catch(err => {
-    //   request_error.value = true;
-    //   request_error_message.value = err.response.data.detail;
-    //   console.log(err)
-    // });;
-
     await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
-
-    // await axios.get(`${BASE_URL}/api/station_profiles/?format=json`, {
-    //   headers: {
-    //     'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-    //   }
-    // }).then((response) => {
-    //   stationProfileList.value = response.data.results
-    // }).catch(err => {
-    //   request_error.value = true;
-    //   request_error_message.value = err.response.data.detail;
-    //   console.log(err)
-    // });
-
     await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)    
   });
 
@@ -525,8 +439,18 @@
         key: 'variable',
         value: 'variable.name'
       },
+      { title: 'First Date',
+        align: 'center',
+        key: 'first_date',
+        value: 'first_date'
+      },
+      { title: 'Last Date',
+        align: 'center',
+        key: 'last_date',
+        value: 'last_date'
+      },            
       {
-        title: 'Available Data',
+        title: '% Available Dates',
         align: 'center',
         key: 'percentage',
       },      
@@ -676,8 +600,9 @@
     let new_entry = {
       station: station,
       variable: variable,
+      first_date: null,
+      last_date: null,      
       action: "Actions Here",
-      // percentage: Math.round(Math.random() * 1000)/10
       percentage: null,
     }
 
@@ -706,26 +631,53 @@
     );
   }
 
+  const updateDataTable = (new_data) =>{
+    for (let dict1 of data_table.value.series) {
+        for (let dict2 of new_data) {
+            if ((dict1["station"]["id"] === dict2["station_id"]) &&
+               (dict1["variable"]["id"]  === dict2["variable_id"])){
+                dict1["first_date"] = dict2["first_date"];
+                dict1["last_date"] = dict2["last_date"];
+                dict1["percentage"] = dict2["percentage"];
+                break;
+            }
+        }
+    }
+  }
 
   const consultData = async () => {
     loading.value = true;
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/api/available_data/`,
-        // JSON.stringify(data_table),
-        {
-          headers: {
-            // 'Content-Type': 'application/json',          
-            'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-          }
+
+    let series = data_table.value.series.map(row => ({
+      'station_id': row.station.id,
+      'variable_id': row.variable.id
+    }));
+
+    let json_data = {
+      'initial_date': finitial_date.value,
+      'initial_time': initial_time.value,
+      'final_date': ffinal_date.value,
+      'final_time': final_time.value,
+      'data_source': selected.value.data_source.source,
+      'series': series
+    };
+
+    await axios.post(`${BASE_URL}/api/available_data/`, 
+      json_data,
+      {
+        headers: {
+          'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`,
+          'Content-Type': 'application/json',
         }
-      );
-      console.log(response.data);
-    } catch (err) {
+      }
+    ).then(response => {
+      updateDataTable(response.data.data)
+    }).catch(err => {
       request_error.value = true;
       request_error_message.value = err.response.data.detail;
-      console.error(err);
-    }
+      console.log(err)
+    });
+
     loading.value = false;
   }
 

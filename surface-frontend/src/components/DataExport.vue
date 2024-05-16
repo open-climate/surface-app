@@ -41,8 +41,10 @@
     </v-card>
   </v-dialog>  
 
-  <form>
-    <h2 class="ma-3">Station Filters</h2>
+  <form class="ma-5">
+    <h1 class="ma-3 my-10">DATA EXPORT</h1>
+
+    <h3 class="ma-3">Station Filters</h3>
 
     <v-row class="mx-3" dense justify="start">
       <v-col class="text-center" cols="2">
@@ -148,7 +150,7 @@
     </v-row>
   </form>
 
-  <form>
+  <form class="ma-5">
     <v-row class="mx-3" dense justify="start">
       <v-col class="text-center" cols="4">
         <v-select
@@ -281,7 +283,7 @@
     </v-row>
   </form>
 
-  <form>
+  <form class="ma-5">
     <v-row class="ma-3">
       <v-data-table
         :headers="data_table.headers"

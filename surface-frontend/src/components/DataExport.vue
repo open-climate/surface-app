@@ -381,11 +381,12 @@
 
     await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
 
-    await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
+    // await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
 
     await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
 
     await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
+
     await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)    
   });
 
@@ -538,12 +539,60 @@
     return filteredVariables;
   });   
 
+
+  const clearAvailableData = () =>{
+    data_table.value.series.forEach(series => series['percentage'] = null);
+  }
+
+  watch(() => selected.value.data_source, (newValue, oldValue) => {
+    clearAvailableData()
+  });
+
+  const getVariables = async (station_id) => {
+    loading.value = true
+    await axios.get(`${BASE_URL}/api/stations_variables/?format=json`, {
+      params: {'station_id': station_id},
+      headers: {
+        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+      }
+    }).then(response => {
+      stationVariableList.value = response.data.results
+    }).catch(err => {
+      request_error.value = true;
+      request_error_message.value = err.response.data.detail;
+      console.log(err)
+    });
+
+    loading.value = false
+  };
+
+  watch(() => selected.value.station, (newValue, oldValue) => {
+    if (newValue === null){
+      stationVariableList.value = []
+    }
+    else {
+      getVariables(newValue)
+    }
+  });
+
+
+
   watch(initial_date, () => {
     formatDate(initial_date, finitial_date)
+    clearAvailableData()
+  });
+
+  watch(initial_time, () => {
+    clearAvailableData()
   });
 
   watch(final_date, () => {
     formatDate(final_date, ffinal_date)
+    clearAvailableData()
+  });
+
+  watch(final_time, () => {
+    clearAvailableData()
   });
 
   const clearSelected = () =>{
@@ -610,6 +659,9 @@
 
     if(!dictExistsKeys(data_table.value.series, new_entry, ['station', 'variable'])){
       data_table.value.series.push(new_entry);
+      if (selected.value.data_source) {
+        consultSeriesData();
+      }
       clearSelected();
     }    
     else{
@@ -646,6 +698,37 @@
         }
     }
   }
+
+  const consultSeriesData = async () => {
+    loading.value = true;
+
+    let json_data = {
+      'initial_date': finitial_date.value,
+      'initial_time': initial_time.value,
+      'final_date': ffinal_date.value,
+      'final_time': final_time.value,
+      'data_source': selected.value.data_source.source,
+      'series': [{'station_id': selected.value.station, 'variable_id': selected.value.variable}]
+    };
+
+    await axios.post(`${BASE_URL}/api/available_data/`, 
+      json_data,
+      {
+        headers: {
+          'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`,
+          'Content-Type': 'application/json',
+        }
+      }
+    ).then(response => {
+      updateDataTable(response.data.data)
+    }).catch(err => {
+      request_error.value = true;
+      request_error_message.value = err.response.data.detail;
+      console.log(err)
+    });
+
+    loading.value = false;
+  }  
 
   const consultData = async () => {
     loading.value = true;

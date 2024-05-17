@@ -101,7 +101,7 @@
   const username = ref(null);
 
   const sidebar = ref({
-    width: 300,
+    width: 70,
     colapsed: true, 
   })
 

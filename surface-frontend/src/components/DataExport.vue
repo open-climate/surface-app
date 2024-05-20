@@ -42,9 +42,9 @@
   </v-dialog>  
 
   <form class="ma-5">
-    <h1 class="ma-3 my-10">DATA EXPORT</h1>
+    <h1 class="ma-3 my-10">{{ $t('dataexportDataExport') }}</h1>
 
-    <h3 class="ma-3">Station Filters</h3>
+    <h3 class="ma-3">{{ $t('dataexportStationFilters') }}</h3>
 
     <v-row class="mx-3" dense justify="start">
       <v-col class="text-center" cols="2">
@@ -165,48 +165,10 @@
         ></v-select>
       </v-col>
         <v-col class="text-center"  cols="4" v-if="selected.data_source">
-          <v-menu
-            location="end"
-            transition="scale-transition"
-            :close-on-content-click="false"
-          >
-            <template v-slot:activator="{ props }">
-              <v-text-field
-                v-bind="props"
-                v-model="finitial_date"
-                label="Initial date"
-                prepend-inner-icon="mdi-calendar"
-                @input="updateDate(finitial_date, initial_date)"
-              ></v-text-field>
-            </template>
-
-            <v-date-picker
-              color="primary"
-              v-model="initial_date"
-            ></v-date-picker>  
-          </v-menu>
+          <SurfaceDatePicker label="Initial Date" v-model="initial_date"/>
         </v-col>
         <v-col class="text-center"  cols="4" v-if="selected.data_source">
-          <v-menu
-            location="end"
-            transition="scale-transition"
-            :close-on-content-click="false"
-          >
-            <template v-slot:activator="{ props }">
-              <v-text-field
-                v-bind="props"
-                v-model="ffinal_date"
-                label="Final date"
-                prepend-inner-icon="mdi-calendar"
-                @input="updateDate(ffinal_date, final_date)"
-              ></v-text-field>
-            </template>
-
-            <v-date-picker
-              color="primary"
-              v-model="final_date"
-            ></v-date-picker>  
-            </v-menu>
+          <SurfaceDatePicker label="Final Date" v-model="final_date"/>          
         </v-col>
     </v-row>
       <div v-if="selected.data_source">
@@ -220,56 +182,20 @@
             </v-col>
 
             <v-col class="text-center" cols="4">
-              <v-menu
-                location="end"
-                transition="scale-transition"
-                :close-on-content-click="false"        
-              >
-                  <template v-slot:activator="{ props }">
-                    <v-text-field
-                      v-bind="props"
-                      label="Initial time"
-                      v-model="initial_time"
-                      prepend-inner-icon="mdi-clock"
-                    ></v-text-field>
-                  </template>
-
-                  <v-time-picker
-                    color="primary"
-                    v-model="initial_time"
-                  ></v-time-picker>
-              </v-menu>
+              <SurfaceTimePicker label="Initial Time" v-model="initial_time"/>                    
             </v-col>  
                    
             <v-col class="text-center"  cols="4">
-              <v-menu
-                location="end"
-                transition="scale-transition"
-                :close-on-content-click="false"        
-              >
-                <template v-slot:activator="{ props }">
-                  <v-text-field
-                    v-bind="props"
-                    label="Final time"
-                    v-model="final_time"
-                    prepend-inner-icon="mdi-clock"
-                  ></v-text-field>
-                </template>
-
-                <v-time-picker
-                  color="primary"
-                  v-model="final_time"
-                ></v-time-picker>
-              </v-menu>
+              <SurfaceTimePicker label="Final Time"  v-model="final_time"/>
             </v-col>
         </v-row>
       </div>
     <v-row class="mx-3" dense justify="end">
-      <v-col align="end" cols="2">
+      <v-col align="end" cols="3">
         <v-btn
           color="primary"
           append-icon="mdi-database-search"
-          @click="consultData"
+          @click="checkData"
           :disabled="(!selected.data_source) || (data_table.series.length === 0)"
         > Check Data Availability </v-btn>
       </v-col>  
@@ -323,13 +249,13 @@
 </template>
 
 <script setup>
-  import { VTimePicker } from 'vuetify/labs/VTimePicker'
   import { ref, watch, onMounted, computed } from 'vue';
   import moment from 'moment';
   import axios from 'axios';
 
   import { required } from '@vuelidate/validators';
   import { useVuelidate } from '@vuelidate/core';
+
 
   const dialog_del = ref(false)
     
@@ -362,12 +288,12 @@
 
   const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
 
-  let loading = ref(false);
-  let request_error = ref(false);
-  let request_error_message = ref("");
+  const loading = ref(false);
+  const request_error = ref(false);
+  const request_error_message = ref("");
 
-  let request_warning = ref(false);
-  let request_warning_message = ref("");
+  const request_warning = ref(false);
+  const request_warning_message = ref("");
 
   const stationList = ref([])
   const variableList = ref([])
@@ -376,20 +302,6 @@
   const stationWatershedList = ref([])
   const stationProfileList = ref([])
 
-  onMounted( async () => {
-    await fetchData(`${BASE_URL}/api/stations/?format=json`, stationList)
-
-    await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
-
-    // await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
-
-    await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
-
-    await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
-
-    await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)    
-  });
-
   const data_sources = ref([
     {value: 0, text: "Raw data", source: "raw_data"},
     {value: 1, text: "Hourly summary", source: "hourly_summary"},
@@ -397,36 +309,6 @@
     {value: 3, text: "Monthly summary", source: "monthly_summary"},
     {value: 4, text: "Yearly summary", source: "yearly_summary"},
   ])
-
-
-  const fetchData = async (url, variable) => {
-    loading.value = true
-
-    let nextPage = new URL(url);
-    
-    nextPage = `${BASE_URL}${nextPage.pathname}${nextPage.search}`
-    while (nextPage) {
-      await axios.get(nextPage, {
-        headers: {
-          'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
-        }
-      }).then(response => {
-        variable.value.push(...response.data.results);
-        nextPage = response.data.next
-        if (nextPage) {
-          nextPage = new URL(nextPage);
-          nextPage = `${BASE_URL}${nextPage.pathname}${nextPage.search}`
-        }
-      }).catch(err => {
-        request_error.value = true;
-        request_error_message.value = err.response.data.detail;
-        console.log(err)
-      });
-    }
-
-    loading.value = false
-  };
-
 
   const current_item = ref(null)
 
@@ -468,18 +350,11 @@
 
   const now = moment()
 
-  const initial_date = ref(new Date(now));
-  const finitial_date = ref(now.format("YYYY-MM-DD"));
+  const initial_date = ref(now.format("YYYY-MM-DD"));
   const initial_time = ref('00:00');
 
-  const final_date = ref(new Date(now.add(1, 'days')));
-  const ffinal_date = ref(now.add(1, 'days').format("YYYY-MM-DD"));
+  const final_date = ref(now.add(1, 'days').format("YYYY-MM-DD"));
   const final_time = ref('00:00');
-
-  const initial_date_menu = false;
-  const initial_time_menu = false;
-  const final_date_menu = false;
-  const final_time_menu = false;
 
   const filteredStationList = computed(() => {
     let filteredStations = stationList.value
@@ -516,6 +391,20 @@
     return filteredStations
   });
 
+  onMounted( async () => {
+    await fetchData(`${BASE_URL}/api/stations/?format=json`, stationList)
+
+    await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
+
+    // await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
+
+    await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
+
+    await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
+
+    await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)    
+  });
+
   const filteredVariableList = computed(() => {
     if (!selected.value.station){
       return []
@@ -540,13 +429,58 @@
   });   
 
 
-  const clearAvailableData = () =>{
-    data_table.value.series.forEach(series => series['percentage'] = null);
-  }
+
 
   watch(() => selected.value.data_source, (newValue, oldValue) => {
     clearAvailableData()
   });
+
+
+  watch(() => selected.value.station, (newValue, oldValue) => {
+    if (newValue === null){
+      stationVariableList.value = []
+    }
+    else {
+      getVariables(newValue)
+    }
+  });
+
+  watch([initial_date, initial_time, final_date, final_time], () => {
+    clearAvailableData()
+  });
+
+  const fetchData = async (url, variable) => {
+    loading.value = true
+
+    let nextPage = new URL(url);
+    
+    nextPage = `${BASE_URL}${nextPage.pathname}${nextPage.search}`
+    while (nextPage) {
+      await axios.get(nextPage, {
+        headers: {
+          'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`
+        }
+      }).then(response => {
+        variable.value.push(...response.data.results);
+        nextPage = response.data.next
+        if (nextPage) {
+          nextPage = new URL(nextPage);
+          nextPage = `${BASE_URL}${nextPage.pathname}${nextPage.search}`
+        }
+      }).catch(err => {
+        request_error.value = true;
+        request_error_message.value = err.response.data.detail;
+        console.log(err)
+      });
+    }
+
+    loading.value = false
+  };
+
+  const clearAvailableData = () =>{
+    data_table.value.series.forEach(series => series['percentage'] = null);
+  }
+
 
   const getVariables = async (station_id) => {
     loading.value = true
@@ -565,35 +499,6 @@
 
     loading.value = false
   };
-
-  watch(() => selected.value.station, (newValue, oldValue) => {
-    if (newValue === null){
-      stationVariableList.value = []
-    }
-    else {
-      getVariables(newValue)
-    }
-  });
-
-
-
-  watch(initial_date, () => {
-    formatDate(initial_date, finitial_date)
-    clearAvailableData()
-  });
-
-  watch(initial_time, () => {
-    clearAvailableData()
-  });
-
-  watch(final_date, () => {
-    formatDate(final_date, ffinal_date)
-    clearAvailableData()
-  });
-
-  watch(final_time, () => {
-    clearAvailableData()
-  });
 
   const clearSelected = () =>{
     selected.value = {
@@ -660,7 +565,7 @@
     if(!dictExistsKeys(data_table.value.series, new_entry, ['station', 'variable'])){
       data_table.value.series.push(new_entry);
       if (selected.value.data_source) {
-        consultSeriesData();
+        checkSeriesData();
       }
       clearSelected();
     }    
@@ -679,7 +584,7 @@
     );
   }
 
-  const consultDataRandom = () => {
+  const checkDataRandom = () => {
     data_table.value.series.forEach(
       series => series.percentage = Math.round(Math.random() * 1000)/10
     );
@@ -699,13 +604,13 @@
     }
   }
 
-  const consultSeriesData = async () => {
+  const checkSeriesData = async () => {
     loading.value = true;
 
     let json_data = {
-      'initial_date': finitial_date.value,
+      'initial_date': initial_date.value,
       'initial_time': initial_time.value,
-      'final_date': ffinal_date.value,
+      'final_date': final_date.value,
       'final_time': final_time.value,
       'data_source': selected.value.data_source.source,
       'series': [{'station_id': selected.value.station, 'variable_id': selected.value.variable}]
@@ -730,7 +635,7 @@
     loading.value = false;
   }  
 
-  const consultData = async () => {
+  const checkData = async () => {
     loading.value = true;
 
     let series = data_table.value.series.map(row => ({
@@ -739,9 +644,9 @@
     }));
 
     let json_data = {
-      'initial_date': finitial_date.value,
+      'initial_date': initial_date.value,
       'initial_time': initial_time.value,
-      'final_date': ffinal_date.value,
+      'final_date': final_date.value,
       'final_time': final_time.value,
       'data_source': selected.value.data_source.source,
       'series': series
@@ -778,18 +683,6 @@
   const getStationTitle = (station) => {
     return `${station.name} - ${station.code}`;
   }  
-
-  const updateSelectedDate = () => {
-    selectedDate.value = moment(formattedDate.value, 'YYYY-MM-DD').toDate();
-  };
-
-  const updateDate = (fdate, date) => {
-    date.value = moment(fdate.value, 'YYYY-MM-DD').toDate();
-  };
-
-  const formatDate = (date,fdate) => {
-    fdate.value = moment(date.value).format('YYYY-MM-DD')
-  };
 
   const getColor = (percent) =>{
     if (percent === null) {

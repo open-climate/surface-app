@@ -1,10 +1,10 @@
 <template>
   <v-navigation-drawer 
-    v-model="drawer"
     app
+    v-model="drawer"
     color="white"
-    @mouseover="sidebar.colapsed = false; sidebar.width=300"
-    @mouseleave="sidebar.colapsed = true; sidebar.width=70; setSubList(null)"
+    @mouseover="expandSidebar()"
+    @mouseleave="colapseSidebar(); setSubList(null)"
     :width = "sidebar.width"
   >
     <v-list>
@@ -25,7 +25,7 @@
         <template v-slot:prepend>
           <v-icon size="large" style="margin-left: 4.5px"> mdi-crosshairs-gps </v-icon>
         </template>
-        <v-list-item-title v-if="!sidebar.colapsed" v-text="'STATIONS'"/>
+        <v-list-item-title v-if="!sidebar.colapsed" v-text="$t('sidebarStations')"/>
       </v-list-item>   
 
       <v-list v-if="sublist=='STATIONS'">
@@ -55,7 +55,6 @@
         </v-list-item>                        
       </v-list>
 
-
       <v-list-item @click="setSubList('EXTENTIONS')">
         <template v-slot:prepend>
           <v-icon size="large" style="margin-left: 4.5px"> mdi-puzzle </v-icon>
@@ -70,7 +69,7 @@
           </template>           
           <v-list-item-title style="margin-left: 65px" v-text="'DATA EXPORT'"/>
         </v-list-item>
-      </v-list>      
+      </v-list>
     </v-list>
   </v-navigation-drawer>
 </template>
@@ -78,16 +77,6 @@
 <script setup>
   import { ref, watch, onMounted, defineModel } from 'vue';
   import axios from 'axios';
-
-  const setSubList = (value) =>{
-    if (sublist.value === value) {
-      sublist.value=null;
-    }
-    else{
-      sublist.value=value;  
-    }
-    
-  }
 
   const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
 
@@ -117,4 +106,21 @@
       request_error_message.value = err.response.data.detail;
       console.log(err)
     });
-  })</script>
+  })
+
+  const colapseSidebar = () => {
+    sidebar.value.colapsed = true;
+    sidebar.value.width=70        
+  }
+
+  const expandSidebar = () => {
+    sidebar.value.colapsed = false;
+    sidebar.value.width=300
+  }
+
+  const setSubList = (value) => {
+    sublist.value = (sublist.value === value) ? null : value;
+  }
+
+
+</script>

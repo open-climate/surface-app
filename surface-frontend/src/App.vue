@@ -1,7 +1,8 @@
 <template>
-  <v-app>
-  	<Sidebar v-model="sidebar_model"/>
+  <v-app>   
+    <Sidebar v-model="sidebar_model"/>
     <v-main>
+      <LanguageSelector />
       <DataExport v-if="sidebar_model"/>
       <HelloWorld v-if="!sidebar_model"/>
       <AppFooter v-if="!sidebar_model"/>

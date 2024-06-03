@@ -190,7 +190,7 @@
             </v-col>
         </v-row>
       </div>
-    <v-row class="mx-3" dense justify="end">
+<!--     <v-row class="mx-3" dense justify="end">
       <v-col align="end" cols="3">
         <v-btn
           color="primary"
@@ -203,10 +203,11 @@
         <v-btn
           color="primary"
           append-icon="mdi-send"
+          @click="queryData"
           :disabled="(!selected.data_source) || (data_table.series.length === 0)"
         > Generate CSV </v-btn>
       </v-col>   
-    </v-row>
+    </v-row> -->
   </form>
 
   <form class="ma-5">
@@ -223,6 +224,7 @@
               width="25%"
               :color="getColor(item.percentage)"
               class="text-center"
+              :loading="loading.value"
             >
               {{item.percentage}} %
             </v-card>            
@@ -246,6 +248,56 @@
       </v-data-table>
     </v-row>
   </form>
+
+  <form class="ma-5">
+    <v-row class="mx-3" dense justify="end">
+<!--       <v-col align="end" cols="3">
+        <v-btn
+          color="primary"
+          append-icon="mdi-database-search"
+          @click="checkData"
+          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
+        > Check Data Availability </v-btn>
+      </v-col>   -->
+<!--       <v-col align="end" cols="3">
+        <v-radio-group
+          v-model="selected.file_format"
+          inline
+          label="File Format"
+        >
+          <v-radio
+            label="CSV"
+            value="csv"
+          ></v-radio>
+          <v-radio
+            label="Excel"
+            value="xcell"
+          ></v-radio>          
+          <v-radio
+            label="R-Instat"
+            value="r-instat"
+          ></v-radio>
+        </v-radio-group>        
+      </v-col> -->
+      <v-col align="end" cols="2">
+        <v-select
+          v-model="selected.file_format"
+          item-title="text"
+          item-value='format'          
+          :items="file_formats"
+          label="File Format"
+        ></v-select>    
+      </v-col>      
+      <v-col align="end" cols="2">
+        <v-btn
+          color="primary"
+          append-icon="mdi-send"
+          @click="queryData"
+          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
+        > Download File </v-btn>
+      </v-col>   
+    </v-row>
+  </form>  
 </template>
 
 <script setup>
@@ -275,6 +327,7 @@
     district: null,
     watershed: null,
     data_source: null,
+    file_format: 'csv',
   });  
 
   const rules = {
@@ -287,6 +340,7 @@
   const $v = useVuelidate(rules, { selected });
 
   const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
+  const PYGEOAPI_URL = import.meta.env.VITE_BACKEND_PYGEOAPI_BASE_URL
 
   const loading = ref(false);
   const request_error = ref(false);
@@ -308,6 +362,12 @@
     {value: 2, text: "Daily summary", source: "daily_summary"},
     {value: 3, text: "Monthly summary", source: "monthly_summary"},
     {value: 4, text: "Yearly summary", source: "yearly_summary"},
+  ])
+
+  const file_formats = ref([
+    {text: "CSV ", format: "csv"},
+    {text: "EXCEL", format: "xcell"},
+    {text: "R-Instat", format: "r_instat"},
   ])
 
   const current_item = ref(null)
@@ -429,10 +489,11 @@
   });   
 
 
-
-
   watch(() => selected.value.data_source, (newValue, oldValue) => {
     clearAvailableData()
+    if (selected.value.data_source!=null && data_table.value.series.length > 0){
+      checkData()
+    }
   });
 
 
@@ -447,6 +508,9 @@
 
   watch([initial_date, initial_time, final_date, final_time], () => {
     clearAvailableData()
+    if (selected.value.data_source!=null && data_table.value.series.length > 0){
+      checkData()
+    }
   });
 
   const fetchData = async (url, variable) => {
@@ -478,7 +542,11 @@
   };
 
   const clearAvailableData = () =>{
-    data_table.value.series.forEach(series => series['percentage'] = null);
+    data_table.value.series.forEach(series => {
+      series['percentage'] = null;
+      series['first_date'] = null;
+      series['last_date'] = null;
+    })
   }
 
 
@@ -634,6 +702,43 @@
 
     loading.value = false;
   }  
+
+  const queryData = async () => {
+    loading.value = true;
+
+    let series = data_table.value.series.map(row => ({
+      'station_id': row.station.id,
+      'variable_id': row.variable.id
+    }));
+
+    let json_data = {
+      'initial_date': initial_date.value,
+      'initial_time': initial_time.value,
+      'final_date': final_date.value,
+      'final_time': final_time.value,
+      'data_source': selected.value.data_source.source,
+      'series': series
+    };
+
+    // params = new url.URLSearchParams(json_data);
+
+    await axios({
+      url: `${PYGEOAPI_URL}/data_export`,
+      method: 'GET',
+      responseType: 'blob', // important
+    }).then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'file.csv'); // or any other extension
+      document.body.appendChild(link);
+      link.click();
+    }).catch(err => {
+      request_error.value = true;
+      console.log(err)
+    });
+      loading.value = false;   
+    }
 
   const checkData = async () => {
     loading.value = true;

@@ -14,17 +14,17 @@
   <v-dialog v-model="dialog_del" width="35%">
     <v-card class="text-center">
       <v-card-title class="text-h5">
-        Remove Series
+        {{t('$vuetify.DataExport.RemoveSeries')}}
       </v-card-title>
       <v-card-text class="ml-2">
           <v-form>
             <v-row>
               <v-col class="text-center" cols="6">
-                <h3>Station</h3>
+                <h3>{{t('$vuetify.DataExport.Station')}}</h3>
                 <span>{{getStationTitle(current_item.station)}}</span>
               </v-col>       
               <v-col class="text-center" cols="6">
-                <h3>Variable</h3>
+                <h3>{{t('$vuetify.DataExport.Variable')}}</h3>
                 <span>{{current_item.variable.name}}</span>
               </v-col>                      
             </v-row>
@@ -32,27 +32,27 @@
       </v-card-text>             
       <v-card-actions class="ml-2">
         <v-btn width="50%" variant="flat" color="grey" @click="dialog_del = false">
-          Cancel
+          {{t('$vuetify.DataExport.Cancel')}}
         </v-btn>
         <v-btn width="50%" variant="flat" color="error" @click="dialog_del = false; removeSeries()">
-          Remove
+          {{t('$vuetify.DataExport.Remove')}}
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>  
 
   <form class="ma-5">
-    <h1 class="ma-3 my-10">{{ $t('dataexportDataExport') }}</h1>
+    <h1 class="ma-3 my-10"> {{t('$vuetify.DataExport.DataExport')}} </h1>
 
-    <h3 class="ma-3">{{ $t('dataexportStationFilters') }}</h3>
+    <h3 class="ma-3"> {{t('$vuetify.DataExport.StationFilters')}} </h3>
 
     <v-row class="mx-3" dense justify="start">
       <v-col class="text-center" cols="2">
         <v-switch
-            v-model="filter.byDistrict"
-            color="primary"
-            label="Filter by district"
-            @change="clearDistrict(filter, selected)"
+          v-model="filter.byDistrict"
+          color="primary"
+          :label="t('$vuetify.DataExport.FilterByDistrict')"
+          @change="clearDistrict(filter, selected)"
         ></v-switch> 
       </v-col>      
       <v-col class="text-center" cols="3">
@@ -61,7 +61,7 @@
           item-value="name"
           v-model="selected.district"
           :items="stationDistrictList"
-          label="District"
+          :label="t('$vuetify.DataExport.District')"
           clearable
           :disabled="!filter.byDistrict"
         ></v-autocomplete>
@@ -72,7 +72,7 @@
           item-value="name"
           v-model="selected.watershed"
           :items="stationWatershedList"
-          label="Watershed"
+          :label="t('$vuetify.DataExport.Watershed')"
           clearable
           :disabled="filter.byDistrict"
         ></v-autocomplete>
@@ -83,7 +83,7 @@
           item-value="id"
           v-model="selected.profile"
           :items="stationProfileList"
-          label="Profile"
+          :label="t('$vuetify.DataExport.Profile')"          
           clearable
         ></v-autocomplete>
       </v-col>       
@@ -93,38 +93,38 @@
         <v-switch
           v-model="filter.isActive"
           color="primary"
-          label="Active"
+          :label="t('$vuetify.DataExport.Active')"          
         ></v-switch>              
       </v-col>
       <v-col class="text-center" cols="2">
         <v-switch
           v-model="filter.isAutomatic"
           color="primary"
-          label="Automatic"
+          :label="t('$vuetify.DataExport.Automatic')"          
         ></v-switch>
       </v-col>
       <v-col class="text-center" cols="4">
         <v-autocomplete
           v-model="selected.station"
-          label="Station"
+          :label="t('$vuetify.DataExport.Station')"          
           :items="filteredStationList"
           :item-title="getStationTitle"
           item-value="id"
           clearable
           persistent-hint
-          hint="*Required"
+          :hint="t('$vuetify.DataExport.RequiredHint')"
         ></v-autocomplete>
       </v-col>     
       <v-col class="text-center" cols="4">
         <v-autocomplete
           v-model="selected.variable"
-          label="Variable"
+          :label="t('$vuetify.DataExport.Variable')"          
           :items="filteredVariableList"
           item-title="name"
           item-value="id"
           clearable
           persistent-hint
-          hint="*Required"
+          :hint="t('$vuetify.DataExport.RequiredHint')"
         ></v-autocomplete>
       </v-col>           
     </v-row>
@@ -135,7 +135,7 @@
           append-icon="mdi-magnify-plus"
           @click="addToSeries"
           :disabled="$v.selected.$invalid"
-        > Add Series </v-btn>
+        > {{ t('$vuetify.DataExport.AddSeries')}} </v-btn>
       </v-col>   
     </v-row>
 
@@ -157,18 +157,22 @@
           v-model="selected.data_source"
           item-title="text"                
           :items="data_sources"
-          label="Data Source"
+          :label="t('$vuetify.DataExport.DataSource')"          
           return-object
           clearable
           persistent-hint
-          hint="*Required"
+          :hint="t('$vuetify.DataExport.RequiredHint')"
         ></v-select>
       </v-col>
         <v-col class="text-center"  cols="4" v-if="selected.data_source">
-          <SurfaceDatePicker label="Initial Date" v-model="initial_date"/>
+          <SurfaceDatePicker
+            :label="t('$vuetify.DataExport.InitialDate')"
+            v-model="initial_date"/>
         </v-col>
         <v-col class="text-center"  cols="4" v-if="selected.data_source">
-          <SurfaceDatePicker label="Final Date" v-model="final_date"/>          
+          <SurfaceDatePicker 
+            :label="t('$vuetify.DataExport.FinalDate')"
+            v-model="final_date"/>          
         </v-col>
     </v-row>
       <div v-if="selected.data_source">
@@ -182,32 +186,18 @@
             </v-col>
 
             <v-col class="text-center" cols="4">
-              <SurfaceTimePicker label="Initial Time" v-model="initial_time"/>                    
+              <SurfaceTimePicker
+                :label="t('$vuetify.DataExport.InitialTime')"                
+                v-model="initial_time"/>                    
             </v-col>  
                    
             <v-col class="text-center"  cols="4">
-              <SurfaceTimePicker label="Final Time"  v-model="final_time"/>
+              <SurfaceTimePicker
+                :label="t('$vuetify.DataExport.FinalTime')"                
+                v-model="final_time"/>
             </v-col>
         </v-row>
       </div>
-<!--     <v-row class="mx-3" dense justify="end">
-      <v-col align="end" cols="3">
-        <v-btn
-          color="primary"
-          append-icon="mdi-database-search"
-          @click="checkData"
-          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
-        > Check Data Availability </v-btn>
-      </v-col>  
-      <v-col align="end" cols="2">
-        <v-btn
-          color="primary"
-          append-icon="mdi-send"
-          @click="queryData"
-          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
-        > Generate CSV </v-btn>
-      </v-col>   
-    </v-row> -->
   </form>
 
   <form class="ma-5">
@@ -251,41 +241,13 @@
 
   <form class="ma-5">
     <v-row class="mx-3" dense justify="end">
-<!--       <v-col align="end" cols="3">
-        <v-btn
-          color="primary"
-          append-icon="mdi-database-search"
-          @click="checkData"
-          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
-        > Check Data Availability </v-btn>
-      </v-col>   -->
-<!--       <v-col align="end" cols="3">
-        <v-radio-group
-          v-model="selected.file_format"
-          inline
-          label="File Format"
-        >
-          <v-radio
-            label="CSV"
-            value="csv"
-          ></v-radio>
-          <v-radio
-            label="Excel"
-            value="xcell"
-          ></v-radio>          
-          <v-radio
-            label="R-Instat"
-            value="r-instat"
-          ></v-radio>
-        </v-radio-group>        
-      </v-col> -->
       <v-col align="end" cols="2">
         <v-select
           v-model="selected.file_format"
           item-title="text"
           item-value='format'          
           :items="file_formats"
-          label="File Format"
+          :label="t('$vuetify.DataExport.FileFormat')"
         ></v-select>    
       </v-col>      
       <v-col align="end" cols="2">
@@ -294,7 +256,7 @@
           append-icon="mdi-send"
           @click="queryData"
           :disabled="(!selected.data_source) || (data_table.series.length === 0)"
-        > Download File </v-btn>
+        > {{t('$vuetify.DataExport.DownloadFile')}} </v-btn>
       </v-col>   
     </v-row>
   </form>  
@@ -308,9 +270,11 @@
   import { required } from '@vuelidate/validators';
   import { useVuelidate } from '@vuelidate/core';
 
+  import { useLocale } from 'vuetify'
+  const { t } = useLocale()  
 
   const dialog_del = ref(false)
-    
+
   const station = ref(null)
   const variable = ref(null)
 
@@ -357,16 +321,16 @@
   const stationProfileList = ref([])
 
   const data_sources = ref([
-    {value: 0, text: "Raw data", source: "raw_data"},
-    {value: 1, text: "Hourly summary", source: "hourly_summary"},
-    {value: 2, text: "Daily summary", source: "daily_summary"},
-    {value: 3, text: "Monthly summary", source: "monthly_summary"},
-    {value: 4, text: "Yearly summary", source: "yearly_summary"},
+    {value: 0, text: t('$vuetify.DataExport.RawData'), source: "raw_data"},
+    {value: 1, text: t('$vuetify.DataExport.HourlySummary'), source: "hourly_summary"},
+    {value: 2, text: t('$vuetify.DataExport.DailySummary'), source: "daily_summary"},
+    {value: 3, text: t('$vuetify.DataExport.MonthlySummary'), source: "monthly_summary"},
+    {value: 4, text: t('$vuetify.DataExport.YearlySummary'), source: "yearly_summary"},
   ])
 
   const file_formats = ref([
     {text: "CSV ", format: "csv"},
-    {text: "EXCEL", format: "xcell"},
+    {text: "Excel", format: "xcell"},
     {text: "R-Instat", format: "r_instat"},
   ])
 
@@ -374,33 +338,33 @@
 
   const data_table = ref({
     headers: [
-      { title: 'Station',
+      { title: t('$vuetify.DataExport.Station'),
         align: 'center',
         key: 'station',
         value: item => getStationTitle(item.station)
       },
-      { title: 'Variable',
+      { title: t('$vuetify.DataExport.Variable'),
         align: 'center',
         key: 'variable',
         value: 'variable.name'
       },
-      { title: 'First Date',
+      { title: t('$vuetify.DataExport.FirstDate'),
         align: 'center',
         key: 'first_date',
         value: 'first_date'
       },
-      { title: 'Last Date',
+      { title: t('$vuetify.DataExport.LastDate'),
         align: 'center',
         key: 'last_date',
         value: 'last_date'
       },            
       {
-        title: '% Available Dates',
+        title: t('$vuetify.DataExport.AvailableDates'),
         align: 'center',
         key: 'percentage',
       },      
       {
-        title: 'Action',
+        title: t('$vuetify.DataExport.Action'),
         align: 'center',
         key: 'action'
       },
@@ -488,14 +452,12 @@
     return filteredVariables;
   });   
 
-
   watch(() => selected.value.data_source, (newValue, oldValue) => {
     clearAvailableData()
     if (selected.value.data_source!=null && data_table.value.series.length > 0){
       checkData()
     }
   });
-
 
   watch(() => selected.value.station, (newValue, oldValue) => {
     if (newValue === null){
@@ -548,7 +510,6 @@
       series['last_date'] = null;
     })
   }
-
 
   const getVariables = async (station_id) => {
     loading.value = true
@@ -814,4 +775,3 @@
   height: 100vh; /* Adjust as needed */
 }
 </style>
-

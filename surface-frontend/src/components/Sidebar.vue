@@ -25,7 +25,7 @@
       <v-list-item @click="setSubList('STATIONS')">
         <template v-slot:prepend>
           <v-icon size="large" class="list-icon"> mdi-crosshairs-gps </v-icon>
-          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="$t('sidebarStations')"/>
+          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="t('$vuetify.Sidebar.Stations')"/>
         </template>        
       </v-list-item>   
 
@@ -34,32 +34,32 @@
           <template v-slot:append>
             <v-icon size="large"> mdi-map </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'MAP'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.Map')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
             <template v-slot:append>
               <v-icon size="large"> mdi-chart-donut </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'LIST'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.List')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
           <template v-slot:append>
             <v-icon size="large"> mdi-chart-donut </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'METADATA'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.Metadata')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
           <template v-slot:append>
             <v-icon size="large"> mdi-monitor </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'STATIONS MONITORING'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.StationsMonitoring')"/>
         </v-list-item>                        
       </v-list>
 
       <v-list-item @click="setSubList('MAINTENANCE')">
         <template v-slot:prepend>
           <v-icon size="large" class="list-icon"> mdi-wrench </v-icon>
-          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="'MAINTENANCE'"/>
+          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="t('$vuetify.Sidebar.Maintenance')"/>
         </template>        
       </v-list-item>   
 
@@ -68,20 +68,20 @@
           <template v-slot:append>
             <v-icon size="large"> mdi-clipboard-check-outline </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'EQUIPMENT INVENTORY'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.EquipmentInventory')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
             <template v-slot:append>
               <v-icon size="large"> mdi-wrench </v-icon>
             </template>
-            <v-list-item-title class="sublist-item" v-text="'MAINTENANCE REPORTS'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.MaintenanceReports')"/>
         </v-list-item>                     
       </v-list>
 
       <v-list-item @click="setSubList('DATA')">
         <template v-slot:prepend>
           <v-icon size="large" class="list-icon"> mdi-chart-donut </v-icon>
-          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="'DATA'"/>
+          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="t('$vuetify.Sidebar.Data')"/>
         </template>        
       </v-list-item>   
 
@@ -90,25 +90,25 @@
             <template v-slot:append>
               <v-icon size="large"> mdi-keyboard </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'DAILY CAPTURE FORM'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.DailyCaptureForm')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
             <template v-slot:append>
               <v-icon size="large"> mdi-keyboard </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'SYNOP CAPTURE FORM'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.SynopCaptureForm')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
             <template v-slot:append>
               <v-icon size="large"> mdi-cloud-download </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'EXPORT'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.StepThreshold')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
             <template v-slot:append>
               <v-icon size="large"> mdi-monitor-dashboard </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'DATA INVENTORY'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.DataInventory')"/>
         </v-list-item>        
       </v-list>
 
@@ -116,7 +116,7 @@
       <v-list-item @click="setSubList('QUALITY CONTROLL')">
         <template v-slot:prepend>
           <v-icon size="large" class="list-icon"> mdi-playlist-check </v-icon>
-          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="'QUALITY CONTROL'"/>
+          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="t('$vuetify.Sidebar.QualityControl')"/>
         </template>        
       </v-list-item>   
 
@@ -126,25 +126,25 @@
             <template v-slot:append>
               <v-icon size="large"> mdi-check-all </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'DAILY CAPTURE FORM'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.DataValidation')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
             <template v-slot:append>
               <v-icon size="large"> mdi-notification-clear-all </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'SYNOP CAPTURE FORM'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.RangeThreshold')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
             <template v-slot:append>
               <v-icon size="large"> mdi-priority-low </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'EXPORT'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.StepThreshold')"/>
         </v-list-item>
         <v-list-item size="large" @click="model=false">
             <template v-slot:append>
               <v-icon size="large"> mdi-format-align-left </v-icon>
             </template>           
-            <v-list-item-title class="sublist-item" v-text="'DATA INVENTORY'"/>
+            <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.PersistThreshold')"/>
         </v-list-item>        
       </v-list>
 
@@ -152,53 +152,53 @@
       <v-list-item @click="setSubList('PRODUCTS')">
         <template v-slot:prepend>
           <v-icon size="large" class="list-icon"> mdi-list-box-outline </v-icon>
-          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="'PRODUCTS'"/>
+          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="t('$vuetify.Sidebar.Products')"/>
         </template>        
       </v-list-item>
 
       <v-list v-if="sublist=='PRODUCTS'">
-        <v-list-item size="large" @click="model=true">
+        <v-list-item size="large" @click="model=false">
           <template v-slot:append>
             <v-icon size="large"> mdi-account-multiple </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'STATION REPORT'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.StationReport')"/>
         </v-list-item>
-        <v-list-item size="large" @click="model=true">
+        <v-list-item size="large" @click="model=false">
           <template v-slot:append>
             <v-icon size="large"> mdi-view-list </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'VARIABLE REPORT'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.VariableReport')"/>
         </v-list-item>      
-        <v-list-item size="large" @click="model=true">
+        <v-list-item size="large" @click="model=false">
           <template v-slot:append>
             <v-icon size="large"> mdi-swap-horizontal </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'STATION COMPARE'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.StationCompare')"/>
         </v-list-item>
-        <v-list-item size="large" @click="model=true">
+        <v-list-item size="large" @click="model=false">
           <template v-slot:append>
             <v-icon size="large"> mdi-view-dashboard </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'SPATIAL ANALYSIS'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.SpatialAnalysis')"/>
         </v-list-item>
-        <v-list-item size="large" @click="model=true">
+        <v-list-item size="large" @click="model=false">
           <template v-slot:append>
             <v-icon size="large"> mdi-poll </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'EXTREMES AND MEANS'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.ExtremesAndMeans')"/>
         </v-list-item>
-        <v-list-item size="large" @click="model=true">
+        <v-list-item size="large" @click="model=false">
           <template v-slot:append>
             <v-icon size="large"> mdi-waves </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'WAVE DATA ANALYSIS'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.WaveDataAnalysis')"/>
         </v-list-item>                
       </v-list>
 
       <v-list-item @click="setSubList('EXTENTIONS')">
         <template v-slot:prepend>
           <v-icon size="large" class="list-icon"> mdi-puzzle </v-icon>
-          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="'EXTENTIONS'"/>
+          <v-list-item-title class="list-item" v-if="!sidebar.colapsed" v-text="t('$vuetify.Sidebar.Extentions')"/>
         </template>        
       </v-list-item>
 
@@ -207,7 +207,7 @@
           <template v-slot:append>
             <v-icon size="large"> mdi-cloud-download </v-icon>
           </template>           
-          <v-list-item-title class="sublist-item" v-text="'DATA EXPORT'"/>
+          <v-list-item-title class="sublist-item" v-text="t('$vuetify.Sidebar.DataExport')"/>
         </v-list-item>
       </v-list>
     </v-list>
@@ -218,6 +218,9 @@
   import { ref, watch, onMounted, defineModel } from 'vue';
   import axios from 'axios';
 
+  import { useLocale } from 'vuetify'
+  const { t } = useLocale()
+  
   const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
 
   const open = ref(false)

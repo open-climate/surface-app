@@ -330,8 +330,8 @@
 
   const file_formats = ref([
     {text: "CSV ", format: "csv"},
-    {text: "Excel", format: "xcell"},
-    {text: "R-Instat", format: "r_instat"},
+    {text: "Excel", format: "excell"},
+    {text: "R-Instat", format: "rinstat"},
   ])
 
   const current_item = ref(null)
@@ -537,6 +537,7 @@
       district: null,
       watershed: null,
       data_source: selected.value.data_source,
+      file_format: selected.value.file_format,
     }
   }
 
@@ -667,31 +668,45 @@
   const queryData = async () => {
     loading.value = true;
 
-    let series = data_table.value.series.map(row => ({
-      'station_id': row.station.id,
-      'variable_id': row.variable.id
-    }));
+    let url = `${PYGEOAPI_URL}/data_export`;
 
-    let json_data = {
+    let params = {
       'initial_date': initial_date.value,
       'initial_time': initial_time.value,
       'final_date': final_date.value,
       'final_time': final_time.value,
       'data_source': selected.value.data_source.source,
-      'series': series
+      'file_format': selected.value.file_format
     };
 
-    // params = new url.URLSearchParams(json_data);
+    let series = data_table.value.series.map(row => ({
+      'station_id': row.station.id,
+      'variable_id': row.variable.id
+    }));
 
     await axios({
-      url: `${PYGEOAPI_URL}/data_export`,
-      method: 'GET',
-      responseType: 'blob', // important
+      url: url,
+      method: 'POST',
+      data: series,
+      params: params,
+      headers: {
+        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`,
+        'Content-Type': 'application/json',
+      },       
+      responseType: 'blob',
     }).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'file.csv'); // or any other extension
+      if (selected.value.file_format=='csv'){
+        link.setAttribute('download', 'data.csv');
+      }
+      else if (selected.value.file_format=='excell'){
+        link.setAttribute('download', 'data.xlsx');
+      }
+      else if (selected.value.file_format=='rinstat'){
+        link.setAttribute('download', 'data.tlv');
+      }
       document.body.appendChild(link);
       link.click();
     }).catch(err => {

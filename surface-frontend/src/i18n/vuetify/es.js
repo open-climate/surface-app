@@ -31,6 +31,7 @@ export default {
 		RemoveSeries: 'Eliminar Serie',
 		Cancel: 'Cancelar',
 		Remove: 'Eliminar',
+		MeasurementInterval: 'Intervalo de Medición',		
 	},
 	Sidebar: {
 		Stations: 'ESTACIONES',

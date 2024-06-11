@@ -167,11 +167,13 @@
         <v-col class="text-center"  cols="4" v-if="selected.data_source">
           <SurfaceDatePicker
             :label="t('$vuetify.DataExport.InitialDate')"
+            :period="selected.data_source.date_period"            
             v-model="initial_date"/>
         </v-col>
         <v-col class="text-center"  cols="4" v-if="selected.data_source">
           <SurfaceDatePicker 
             :label="t('$vuetify.DataExport.FinalDate')"
+            :period="selected.data_source.date_period"
             v-model="final_date"/>          
         </v-col>
     </v-row>
@@ -182,18 +184,32 @@
           justify="start"
           v-if="['raw_data', 'hourly_summary'].includes(selected.data_source.source)"
         >
-            <v-col class="text-center"  cols="4">
+            <v-col class="text-center"  cols="4" v-if="selected.data_source.source=='raw_data'">
+              <v-select
+                v-model="selected.interval"
+                item-title="symbol"                
+                item-value="value"
+                :items="intervals"
+                :label="t('$vuetify.DataExport.MeasurementInterval')"          
+                persistent-hint
+                :hint="t('$vuetify.DataExport.RequiredHint')"
+              ></v-select>           
             </v-col>
+
+            <v-col class="text-center"  cols="4" v-if="selected.data_source.source!='raw_data'">
+            </v-col>            
 
             <v-col class="text-center" cols="4">
               <SurfaceTimePicker
-                :label="t('$vuetify.DataExport.InitialTime')"                
+                :label="t('$vuetify.DataExport.InitialTime')"
+                :step="selected.interval"          
                 v-model="initial_time"/>                    
             </v-col>  
                    
             <v-col class="text-center"  cols="4">
               <SurfaceTimePicker
                 :label="t('$vuetify.DataExport.FinalTime')"                
+                :step="selected.interval"
                 v-model="final_time"/>
             </v-col>
         </v-row>
@@ -255,7 +271,7 @@
           color="primary"
           append-icon="mdi-send"
           @click="queryData"
-          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
+          :disabled="(!selected.data_source) || (data_table.series.length === 0) || (!datetimeRangeValidation)"
         > {{t('$vuetify.DataExport.DownloadFile')}} </v-btn>
       </v-col>   
     </v-row>
@@ -284,6 +300,16 @@
     isAutomatic: false,
   });
 
+
+  const intervals = ref([
+    { symbol: '1m', value: 60 },
+    { symbol: '5m', value: 300 },
+    { symbol: '6m', value: 360 },
+    { symbol: '10m', value: 600 },
+    { symbol: '15m', value: 900 },
+    { symbol: '30m', value: 1800 }
+  ])
+
   const selected = ref({
     station: null,
     variable: null,
@@ -291,7 +317,9 @@
     district: null,
     watershed: null,
     data_source: null,
+    interval: 900,
     file_format: 'csv',
+
   });  
 
   const rules = {
@@ -321,11 +349,11 @@
   const stationProfileList = ref([])
 
   const data_sources = ref([
-    {value: 0, text: t('$vuetify.DataExport.RawData'), source: "raw_data"},
-    {value: 1, text: t('$vuetify.DataExport.HourlySummary'), source: "hourly_summary"},
-    {value: 2, text: t('$vuetify.DataExport.DailySummary'), source: "daily_summary"},
-    {value: 3, text: t('$vuetify.DataExport.MonthlySummary'), source: "monthly_summary"},
-    {value: 4, text: t('$vuetify.DataExport.YearlySummary'), source: "yearly_summary"},
+    {value: 0, text: t('$vuetify.DataExport.RawData'), source: "raw_data", date_period: 'day'},
+    {value: 1, text: t('$vuetify.DataExport.HourlySummary'), source: "hourly_summary", date_period: 'day'},
+    {value: 2, text: t('$vuetify.DataExport.DailySummary'), source: "daily_summary", date_period: 'day'},
+    {value: 3, text: t('$vuetify.DataExport.MonthlySummary'), source: "monthly_summary", date_period: 'month'},
+    {value: 4, text: t('$vuetify.DataExport.YearlySummary'), source: "yearly_summary", date_period: 'year'},
   ])
 
   const file_formats = ref([
@@ -379,6 +407,71 @@
 
   const final_date = ref(now.add(1, 'days').format("YYYY-MM-DD"));
   const final_time = ref('00:00');
+
+  // const datetimeRangeValidation = true
+
+  const datetimeRangeValidation = computed(() => {
+    let intervalInMInutes = selected.value.interval / 60
+    let date_period = selected.value.data_source.date_period
+
+    const isValidDate = (dateString) => {
+        return moment(dateString, 'YYYY-MM-DD', true).isValid();
+    }
+
+    const isValidDatePeriod = (dateString, period) => {
+      if (!isValidDate(dateString)){
+        return false
+      }
+
+      let date_moment = moment(dateString, 'YYYY-MM-DD')
+
+      if (period === 'year'){
+        return (date_moment.format('MM') === '01' && date_moment.format('DD') === '01')
+      }
+      else if (period === 'month'){
+        return (date_moment.format('DD') === '01')
+      }
+
+      return true
+    }      
+
+    const isValidTime = (timeString) => {
+        return moment(timeString, 'HH:mm', true).isValid();
+    }
+
+    const isValidTimeStep = (timeString, interval) => {
+      let [hours, minutes] = timeString.split(':');
+      
+      return minutes % interval === 0
+    }
+
+
+    if (['raw_data', 'hourly_summary'].includes(selected.value.data_source.source)){
+      // Validating Initial Time
+      if (!isValidTime(initial_time.value) || !isValidTimeStep(initial_time.value, intervalInMInutes)){
+        return false
+      }
+
+      // Validating Final Time
+      if (!isValidTime(final_time.value) || !isValidTimeStep(final_time.value, intervalInMInutes)){
+        return false
+      }
+    }
+
+    else if (['monthly_summary', 'yearly_summary'].includes(selected.value.data_source.source)){
+      // Validating Initial Date
+      if (!isValidDate(initial_date.value) || !isValidDatePeriod(initial_date.value, date_period)){
+        return false
+      }    
+
+      // Validating Final Date
+      if (!isValidDate(final_date.value) || !isValidDatePeriod(final_date.value, date_period)){
+        return false
+      }
+    }
+
+    return true
+  });  
 
   const filteredStationList = computed(() => {
     let filteredStations = stationList.value
@@ -450,12 +543,44 @@
       )      
     }
     return filteredVariables;
-  });   
+  });
 
   watch(() => selected.value.data_source, (newValue, oldValue) => {
     clearAvailableData()
+    if (selected.value.data_source != null){
+      if (selected.value.data_source.source==='raw_data'){
+        selected.value.interval = 900
+      }
+
+      else if (selected.value.data_source.source==='hourly_summary'){
+        let [ini_hours, ini_minutes] = initial_time.value.split(':');
+        initial_time.value = `${ini_hours}:00`;
+
+        let [fin_hours, fin_minutes] = final_time.value.split(':');
+        final_time.value = `${hours}:00`;
+
+        selected.value.interval = 3600
+      }
+      else if (selected.value.data_source.source==='monthly_summary'){
+        let [ini_year, ini_month, ini_day] = initial_date.value.split('-');
+        initial_date.value = `${ini_year}-${ini_month}-01`;
+
+        let [fin_year, fin_month, fin_day] = final_date.value.split('-');
+        final_date.value = `${fin_year}-${fin_month}-01`;
+      }
+      else if (selected.value.data_source.source==='yearly_summary'){
+        let [ini_year, ini_month, ini_day] = initial_date.value.split('-');
+        initial_date.value = `${ini_year}-01-01`;
+
+        let [fin_year, fin_month, fin_day] = final_date.value.split('-');
+        final_date.value = `${fin_year}-01-01`;       
+      }       
+    }
+
     if (selected.value.data_source!=null && data_table.value.series.length > 0){
-      checkData()
+      if (datetimeRangeValidation.value){
+        checkData()
+      }
     }
   });
 
@@ -471,7 +596,9 @@
   watch([initial_date, initial_time, final_date, final_time], () => {
     clearAvailableData()
     if (selected.value.data_source!=null && data_table.value.series.length > 0){
-      checkData()
+      if (datetimeRangeValidation.value){
+        checkData()
+      }
     }
   });
 
@@ -536,6 +663,7 @@
       profile: null,
       district: null,
       watershed: null,
+      interval: selected.value.interval,
       data_source: selected.value.data_source,
       file_format: selected.value.file_format,
     }
@@ -595,7 +723,9 @@
     if(!dictExistsKeys(data_table.value.series, new_entry, ['station', 'variable'])){
       data_table.value.series.push(new_entry);
       if (selected.value.data_source) {
-        checkSeriesData();
+        if (datetimeRangeValidation.value){
+          checkSeriesData();
+        }
       }
       clearSelected();
     }    
@@ -622,15 +752,15 @@
 
   const updateDataTable = (new_data) =>{
     for (let dict1 of data_table.value.series) {
-        for (let dict2 of new_data) {
-            if ((dict1["station"]["id"] === dict2["station_id"]) &&
-               (dict1["variable"]["id"]  === dict2["variable_id"])){
-                dict1["first_date"] = dict2["first_date"];
-                dict1["last_date"] = dict2["last_date"];
-                dict1["percentage"] = dict2["percentage"];
-                break;
-            }
+      for (let dict2 of new_data) {
+        if ((dict1["station"]["id"] === dict2["station_id"]) &&
+           (dict1["variable"]["id"]  === dict2["variable_id"])){
+          dict1["first_date"] = dict2["first_date"];
+          dict1["last_date"] = dict2["last_date"];
+          dict1["percentage"] = dict2["percentage"];
+          break;
         }
+      }
     }
   }
 
@@ -665,6 +795,43 @@
     loading.value = false;
   }  
 
+
+  const checkData = async () => {
+    loading.value = true;
+
+    let series = data_table.value.series.map(row => ({
+      'station_id': row.station.id,
+      'variable_id': row.variable.id
+    }));
+
+    let json_data = {
+      'initial_date': initial_date.value,
+      'initial_time': initial_time.value,
+      'final_date': final_date.value,
+      'final_time': final_time.value,
+      'data_source': selected.value.data_source.source,
+      'series': series
+    };
+
+    await axios.post(`${BASE_URL}/api/available_data/`, 
+      json_data,
+      {
+        headers: {
+          'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`,
+          'Content-Type': 'application/json',
+        }
+      }
+    ).then(response => {
+      updateDataTable(response.data.data)
+    }).catch(err => {
+      request_error.value = true;
+      request_error_message.value = err.response.data.detail;
+      console.log(err)
+    });
+
+    loading.value = false;
+  }
+
   const queryData = async () => {
     loading.value = true;
 
@@ -676,7 +843,8 @@
       'final_date': final_date.value,
       'final_time': final_time.value,
       'data_source': selected.value.data_source.source,
-      'file_format': selected.value.file_format
+      'file_format': selected.value.file_format,
+      'interval': selected.value.interval,
     };
 
     let series = data_table.value.series.map(row => ({
@@ -716,41 +884,6 @@
       loading.value = false;   
     }
 
-  const checkData = async () => {
-    loading.value = true;
-
-    let series = data_table.value.series.map(row => ({
-      'station_id': row.station.id,
-      'variable_id': row.variable.id
-    }));
-
-    let json_data = {
-      'initial_date': initial_date.value,
-      'initial_time': initial_time.value,
-      'final_date': final_date.value,
-      'final_time': final_time.value,
-      'data_source': selected.value.data_source.source,
-      'series': series
-    };
-
-    await axios.post(`${BASE_URL}/api/available_data/`, 
-      json_data,
-      {
-        headers: {
-          'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`,
-          'Content-Type': 'application/json',
-        }
-      }
-    ).then(response => {
-      updateDataTable(response.data.data)
-    }).catch(err => {
-      request_error.value = true;
-      request_error_message.value = err.response.data.detail;
-      console.log(err)
-    });
-
-    loading.value = false;
-  }
 
   const clearDistrict = (filter, selected) => {
     if (filter.byDistrict){

@@ -408,64 +408,64 @@
   const final_date = ref(now.add(1, 'days').format("YYYY-MM-DD"));
   const final_time = ref('00:00');
 
-  // const datetimeRangeValidation = true
+  const isValidDate = (dateString) => {
+      return moment(dateString, 'YYYY-MM-DD', true).isValid();
+  }
+
+  const isValidDatePeriod = (dateString, period) => {
+    if (!isValidDate(dateString)){
+      return false
+    }
+
+    let date_moment = moment(dateString, 'YYYY-MM-DD')
+
+    if (period === 'year'){
+      return (date_moment.format('MM') === '01' && date_moment.format('DD') === '01')
+    }
+    else if (period === 'month'){
+      return (date_moment.format('DD') === '01')
+    }
+
+    return true
+  }      
+
+  const isValidTime = (timeString) => {
+      return moment(timeString, 'HH:mm', true).isValid();
+  }
+
+  const isValidTimeStep = (timeString, interval) => {
+    let [hours, minutes] = timeString.split(':');
+    
+    return minutes % interval === 0
+  }
 
   const datetimeRangeValidation = computed(() => {
     let intervalInMInutes = selected.value.interval / 60
     let date_period = selected.value.data_source.date_period
 
-    const isValidDate = (dateString) => {
-        return moment(dateString, 'YYYY-MM-DD', true).isValid();
+    // Validating Initial Date
+    if (!isValidDate(initial_date.value) || !isValidDatePeriod(initial_date.value, date_period)){
+      return false
+    }    
+
+    // Validating Final Date
+    if (!isValidDate(final_date.value) || !isValidDatePeriod(final_date.value, date_period)){
+      return false
     }
 
-    const isValidDatePeriod = (dateString, period) => {
-      if (!isValidDate(dateString)){
-        return false
-      }
-
-      let date_moment = moment(dateString, 'YYYY-MM-DD')
-
-      if (period === 'year'){
-        return (date_moment.format('MM') === '01' && date_moment.format('DD') === '01')
-      }
-      else if (period === 'month'){
-        return (date_moment.format('DD') === '01')
-      }
-
-      return true
-    }      
-
-    const isValidTime = (timeString) => {
-        return moment(timeString, 'HH:mm', true).isValid();
+    // Validating Initial and Final Time Formats
+    if (!isValidTime(initial_time.value) || !isValidTime(final_time.value)){
+      return false
     }
-
-    const isValidTimeStep = (timeString, interval) => {
-      let [hours, minutes] = timeString.split(':');
-      
-      return minutes % interval === 0
-    }
-
 
     if (['raw_data', 'hourly_summary'].includes(selected.value.data_source.source)){
-      // Validating Initial Time
-      if (!isValidTime(initial_time.value) || !isValidTimeStep(initial_time.value, intervalInMInutes)){
+      // Validating Initial Time Step
+      if (!isValidTimeStep(initial_time.value, intervalInMInutes)){
         return false
       }
 
-      // Validating Final Time
-      if (!isValidTime(final_time.value) || !isValidTimeStep(final_time.value, intervalInMInutes)){
-        return false
-      }
-    }
-
-    else if (['monthly_summary', 'yearly_summary'].includes(selected.value.data_source.source)){
-      // Validating Initial Date
-      if (!isValidDate(initial_date.value) || !isValidDatePeriod(initial_date.value, date_period)){
-        return false
-      }    
-
-      // Validating Final Date
-      if (!isValidDate(final_date.value) || !isValidDatePeriod(final_date.value, date_period)){
+      // Validating Final Time Step
+      if (!isValidTimeStep(final_time.value, intervalInMInutes)){
         return false
       }
     }
@@ -548,10 +548,23 @@
   watch(() => selected.value.data_source, (newValue, oldValue) => {
     clearAvailableData()
     if (selected.value.data_source != null){
+      if (!isValidTime(initial_time.value)){
+        initial_time.value='00:00'
+      }
+      if (!isValidTime(final_time.value)){
+        final_time.value='00:00'
+      }
+      if (!isValidDate(initial_date.value)){
+        initial_date.value=now.format("YYYY-MM-DD")
+      }
+      if (!isValidDate(final_date.value)){
+        final_date.value=now.add(1, 'days').format("YYYY-MM-DD")
+      }        
+
+
       if (selected.value.data_source.source==='raw_data'){
         selected.value.interval = 900
       }
-
       else if (selected.value.data_source.source==='hourly_summary'){
         let [ini_hours, ini_minutes] = initial_time.value.split(':');
         initial_time.value = `${ini_hours}:00`;
@@ -835,9 +848,14 @@
   const queryData = async () => {
     loading.value = true;
 
-    let url = `${PYGEOAPI_URL}/data_export`;
+    let url = `${BASE_URL}/api/data_export/`;
 
-    let params = {
+    let series = data_table.value.series.map(row => ({
+      'station_id': row.station.id,
+      'variable_id': row.variable.id
+    }));
+
+    let data = {
       'initial_date': initial_date.value,
       'initial_time': initial_time.value,
       'final_date': final_date.value,
@@ -845,23 +863,18 @@
       'data_source': selected.value.data_source.source,
       'file_format': selected.value.file_format,
       'interval': selected.value.interval,
+      'series': series,
     };
-
-    let series = data_table.value.series.map(row => ({
-      'station_id': row.station.id,
-      'variable_id': row.variable.id
-    }));
 
     await axios({
       url: url,
       method: 'POST',
-      data: series,
-      params: params,
+      data: data,
+      responseType: 'blob',
       headers: {
         'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`,
         'Content-Type': 'application/json',
       },       
-      responseType: 'blob',
     }).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -873,7 +886,7 @@
         link.setAttribute('download', 'data.xlsx');
       }
       else if (selected.value.file_format=='rinstat'){
-        link.setAttribute('download', 'data.tlv');
+        link.setAttribute('download', 'data.tsv');
       }
       document.body.appendChild(link);
       link.click();
@@ -881,9 +894,8 @@
       request_error.value = true;
       console.log(err)
     });
-      loading.value = false;   
-    }
-
+    loading.value = false;   
+  }
 
   const clearDistrict = (filter, selected) => {
     if (filter.byDistrict){

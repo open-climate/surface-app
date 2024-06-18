@@ -26,6 +26,9 @@
   import { VTimePicker } from 'vuetify/labs/VTimePicker'
   import { defineProps, defineModel, computed } from 'vue';
   import moment from 'moment';
+  
+  import { useLocale } from 'vuetify'
+  const { t } = useLocale()  
 
   const props = defineProps({
     label: {
@@ -52,13 +55,15 @@
   }
 
   const timeFormatValidation = value => {
-    let message = 'Time must be in the format HH:MM.';
+    let message = t('$vuetify.SurfaceTimePicker.InvalidTimeFormatMessage')
+    // let message = 'Time must be in the format HH:MM.';
     return isValidTime(value) || message;
   };
 
   const timeIntervalValidation = value => {
     let intervalInMinutes = props.step/60
-    let message = 'Time must be a multiple of the measurement interval.';
+    let message = t('$vuetify.SurfaceTimePicker.InvalidTimeIntervalMessage')
+    // let message = 'Time must be a multiple of the measurement interval.';
     return isValidTimeStep(value, intervalInMinutes) || message;
   };
 </script>

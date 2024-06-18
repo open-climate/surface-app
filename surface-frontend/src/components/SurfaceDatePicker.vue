@@ -27,6 +27,8 @@
 <script setup>
   import { ref, watch, defineProps, defineModel, computed } from 'vue';
   import moment from 'moment';
+  import { useLocale } from 'vuetify'
+  const { t } = useLocale()
 
   const props = defineProps({
     label: {
@@ -90,17 +92,17 @@
   }  
 
   const dateFormatValidation = value => {
-    let message  = 'Date must be in the format YYYY-MM-DD.';
+    let message = t('$vuetify.SurfaceDatePicker.InvalidDateFormatMessage')
     return isValidDate(value) || message;
   };
 
   const datePeriodValidation = value => {
     let message = 'Unexpected Error'     
-    if (props.period === 'year'){
-      message = 'Date must be in the format  YYYY-01-01 for Yearly Summary';
+    if (props.period === 'month'){
+      message = t('$vuetify.SurfaceDatePicker.InvalidMonthlyDateMessage')
     }
-    else if (props.period === 'month'){
-      message = 'Date must be in the format  YYYY-MM-01 for Monthly Summary';
+    else if (props.period === 'year'){
+      message = t('$vuetify.SurfaceDatePicker.InvalidYearlyDateMessage')
     }
     return isValidDatePeriod(value, props.period) || message;
   };  

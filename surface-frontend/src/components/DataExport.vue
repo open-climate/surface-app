@@ -187,9 +187,9 @@
             <v-col class="text-center"  cols="4" v-if="selected.data_source.source=='raw_data'">
               <v-select
                 v-model="selected.interval"
-                item-title="symbol"                
-                item-value="value"
-                :items="intervals"
+                item-title="symbol"
+                item-value="seconds"
+                :items="filteredIntervalList"
                 :label="t('$vuetify.DataExport.MeasurementInterval')"          
                 persistent-hint
                 :hint="t('$vuetify.DataExport.RequiredHint')"
@@ -289,6 +289,9 @@
   import { useLocale } from 'vuetify'
   const { t } = useLocale()  
 
+  const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
+  const PYGEOAPI_URL = import.meta.env.VITE_BACKEND_PYGEOAPI_BASE_URL
+
   const dialog_del = ref(false)
 
   const station = ref(null)
@@ -300,16 +303,6 @@
     isAutomatic: false,
   });
 
-
-  const intervals = ref([
-    { symbol: '1m', value: 60 },
-    { symbol: '5m', value: 300 },
-    { symbol: '6m', value: 360 },
-    { symbol: '10m', value: 600 },
-    { symbol: '15m', value: 900 },
-    { symbol: '30m', value: 1800 }
-  ])
-
   const selected = ref({
     station: null,
     variable: null,
@@ -319,7 +312,6 @@
     data_source: null,
     interval: 900,
     file_format: 'csv',
-
   });  
 
   const rules = {
@@ -330,9 +322,6 @@
   };
 
   const $v = useVuelidate(rules, { selected });
-
-  const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
-  const PYGEOAPI_URL = import.meta.env.VITE_BACKEND_PYGEOAPI_BASE_URL
 
   const loading = ref(false);
   const request_error = ref(false);
@@ -347,6 +336,7 @@
   const stationDistrictList = ref([])
   const stationWatershedList = ref([])
   const stationProfileList = ref([])
+  const intervalList = ref([])
 
   const data_sources = ref([
     {value: 0, text: t('$vuetify.DataExport.RawData'), source: "raw_data", date_period: 'day'},
@@ -358,7 +348,7 @@
 
   const file_formats = ref([
     {text: "CSV ", format: "csv"},
-    {text: "Excel", format: "excell"},
+    {text: "Excel", format: "excel"},
     {text: "R-Instat", format: "rinstat"},
   ])
 
@@ -366,33 +356,33 @@
 
   const data_table = ref({
     headers: [
-      { title: t('$vuetify.DataExport.Station'),
+      { title: computed(() => t('$vuetify.DataExport.Station')),
         align: 'center',
         key: 'station',
         value: item => getStationTitle(item.station)
       },
-      { title: t('$vuetify.DataExport.Variable'),
+      { title: computed(() => t('$vuetify.DataExport.Variable')),
         align: 'center',
         key: 'variable',
         value: 'variable.name'
       },
-      { title: t('$vuetify.DataExport.FirstDate'),
+      { title: computed(() => t('$vuetify.DataExport.FirstDate')),
         align: 'center',
         key: 'first_date',
         value: 'first_date'
       },
-      { title: t('$vuetify.DataExport.LastDate'),
+      { title: computed(() => t('$vuetify.DataExport.LastDate')),
         align: 'center',
         key: 'last_date',
         value: 'last_date'
       },            
       {
-        title: t('$vuetify.DataExport.AvailableDates'),
+        title: computed(() => t('$vuetify.DataExport.AvailableDates')),
         align: 'center',
         key: 'percentage',
       },      
       {
-        title: t('$vuetify.DataExport.Action'),
+        title: computed(() => t('$vuetify.DataExport.Action')),
         align: 'center',
         key: 'action'
       },
@@ -408,36 +398,23 @@
   const final_date = ref(now.add(1, 'days').format("YYYY-MM-DD"));
   const final_time = ref('00:00');
 
-  const isValidDate = (dateString) => {
-      return moment(dateString, 'YYYY-MM-DD', true).isValid();
-  }
+  onMounted( async () => {
+    await fetchData(`${BASE_URL}/api/stations/?format=json`, stationList)
 
-  const isValidDatePeriod = (dateString, period) => {
-    if (!isValidDate(dateString)){
-      return false
-    }
+    await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
 
-    let date_moment = moment(dateString, 'YYYY-MM-DD')
+    // await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
 
-    if (period === 'year'){
-      return (date_moment.format('MM') === '01' && date_moment.format('DD') === '01')
-    }
-    else if (period === 'month'){
-      return (date_moment.format('DD') === '01')
-    }
+    await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
 
-    return true
-  }      
+    await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
 
-  const isValidTime = (timeString) => {
-      return moment(timeString, 'HH:mm', true).isValid();
-  }
-
-  const isValidTimeStep = (timeString, interval) => {
-    let [hours, minutes] = timeString.split(':');
+    await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)
     
-    return minutes % interval === 0
-  }
+    await fetchData(`${BASE_URL}/api/intervals/?format=json`, intervalList)
+
+    console.log(intervalList)
+  });
 
   const datetimeRangeValidation = computed(() => {
     let intervalInMInutes = selected.value.interval / 60
@@ -473,6 +450,12 @@
     return true
   });  
 
+  const filteredIntervalList = computed(() => {
+    return intervalList.value.filter(
+      interval => interval.seconds < 3600 && interval.seconds > 60
+    )
+  });
+
   const filteredStationList = computed(() => {
     let filteredStations = stationList.value
 
@@ -506,20 +489,6 @@
     selected.value.variable = null
 
     return filteredStations
-  });
-
-  onMounted( async () => {
-    await fetchData(`${BASE_URL}/api/stations/?format=json`, stationList)
-
-    await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
-
-    // await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
-
-    await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
-
-    await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
-
-    await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)    
   });
 
   const filteredVariableList = computed(() => {
@@ -570,7 +539,7 @@
         initial_time.value = `${ini_hours}:00`;
 
         let [fin_hours, fin_minutes] = final_time.value.split(':');
-        final_time.value = `${hours}:00`;
+        final_time.value = `${fin_hours}:00`;
 
         selected.value.interval = 3600
       }
@@ -614,6 +583,37 @@
       }
     }
   });
+
+  const isValidDate = (dateString) => {
+      return moment(dateString, 'YYYY-MM-DD', true).isValid();
+  }
+
+  const isValidDatePeriod = (dateString, period) => {
+    if (!isValidDate(dateString)){
+      return false
+    }
+
+    let date_moment = moment(dateString, 'YYYY-MM-DD')
+
+    if (period === 'year'){
+      return (date_moment.format('MM') === '01' && date_moment.format('DD') === '01')
+    }
+    else if (period === 'month'){
+      return (date_moment.format('DD') === '01')
+    }
+
+    return true
+  }      
+
+  const isValidTime = (timeString) => {
+      return moment(timeString, 'HH:mm', true).isValid();
+  }
+
+  const isValidTimeStep = (timeString, interval) => {
+    let [hours, minutes] = timeString.split(':');
+    return minutes % interval === 0
+  }
+
 
   const fetchData = async (url, variable) => {
     loading.value = true
@@ -808,7 +808,6 @@
     loading.value = false;
   }  
 
-
   const checkData = async () => {
     loading.value = true;
 
@@ -882,7 +881,7 @@
       if (selected.value.file_format=='csv'){
         link.setAttribute('download', 'data.csv');
       }
-      else if (selected.value.file_format=='excell'){
+      else if (selected.value.file_format=='excel'){
         link.setAttribute('download', 'data.xlsx');
       }
       else if (selected.value.file_format=='rinstat'){

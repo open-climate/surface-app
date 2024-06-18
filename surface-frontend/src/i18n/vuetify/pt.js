@@ -1,4 +1,13 @@
 export default {
+	SurfaceTimePicker: {
+		InvalidTimeFormatMessage: 'A hora deve estar no formato HH:MM.',
+		InvalidTimeIntervalMessage: 'A hora deve ser um múltiplo do intervalo de medição.',
+	},
+	SurfaceDatePicker: {
+		InvalidDateFormatMessage: 'A data deve estar no formato AAAA-MM-DD.',
+		InvalidMonthlyDateMessage: 'A data deve estar no formato AAAA-MM-01 para Sumário Mensal.',
+		InvalidYearlyDateMessage: 'A data deve estar no formato AAAA-01-01 para Sumário Anual.',
+	},
 	DataExport: {
 		DataExport: 'EXPORTAÇÃO DE DADOS',
 		StationFilters: 'Filtros de Estação',

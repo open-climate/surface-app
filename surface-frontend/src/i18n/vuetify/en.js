@@ -1,4 +1,13 @@
 export default {
+	SurfaceTimePicker: {
+		InvalidTimeFormatMessage: 'Time must be in the format HH:MM.',
+		InvalidTimeIntervalMessage: 'Time must be a multiple of the measurement interval.',
+	},
+	SurfaceDatePicker: {
+		InvalidDateFormatMessage: 'Date must be in the format YYYY-MM-DD.',
+		InvalidMonthlyDateMessage: 'Date must be in the format  YYYY-MM-01 for Monthly Summary.',
+		InvalidYearlyDateMessage: 'Date must be in the format  YYYY-01-01 for Yearly Summary.',
+	},
 	DataExport: {
 		DataExport: 'DATA EXPORT',
 		StationFilters: 'Station Filters',

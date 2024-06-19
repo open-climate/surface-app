@@ -18,6 +18,7 @@
       color="primary"
       v-model="time"
       :allowed-minutes="allowedStep"
+      ampm-in-title="true"
     ></v-time-picker>
   </v-menu>
 </template>

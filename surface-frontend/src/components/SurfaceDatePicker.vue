@@ -11,23 +11,58 @@
         :label="label"
         prepend-inner-icon="mdi-calendar"
         @input="updateDate(formated_date, date)"
+        :rules="[dateFormatValidation, datePeriodValidation]"
       ></v-text-field>
     </template>
 
     <v-date-picker
       color="primary"
       v-model="date"
+      :allowed-dates="allowedDates"
+      :view-mode='viewMode'
     ></v-date-picker>  
   </v-menu>
 </template>
 
 <script setup>
-  import { ref, watch, defineProps, defineModel } from 'vue';
+  import { ref, watch, defineProps, defineModel, computed } from 'vue';
   import moment from 'moment';
+  import { useLocale } from 'vuetify'
+  const { t } = useLocale()
 
   const props = defineProps({
-    label: String, // Define label prop of type String
+    label: {
+      type: String,
+      default: 'Time',
+    },
+    period: {
+      type: String,
+      default: 'day',
+    },
   });
+
+
+  const viewMode = computed(() => {
+    switch (props.period) {
+      case 'month':
+        return 'months';
+      case 'year':
+        return 'year';
+      default:
+        return 'month';
+    }
+  });
+
+  const allowedDates = val => {
+    const new_date = new Date(val)
+    if (props.period === 'year'){
+      return new_date.getDate() === 1 && new_date.getMonth() === 0;
+    }
+    else if (props.period === 'month'){
+      return new_date.getDate() === 1;
+    }
+    return true
+  }
 
   const date = ref(null);
   const formated_date = defineModel({required: true})
@@ -36,13 +71,49 @@
     formatDate(date, formated_date)
   });
 
+  const isValidDate = (dateString) => {
+    return moment(dateString, 'YYYY-MM-DD', true).isValid();
+  }  
+
+  const isValidDatePeriod = (dateString, period) => {
+    if (!isValidDate(dateString)){
+      return false
+    }
+
+    let date_moment = moment(dateString, 'YYYY-MM-DD')
+
+    if (period === 'year'){
+      return (date_moment.format('MM') === '01' && date_moment.format('DD') === '01')
+    }
+    else if (period === 'month'){
+      return (date_moment.format('DD') === '01')
+    }
+    return true
+  }  
+
+  const dateFormatValidation = value => {
+    let message = t('$vuetify.SurfaceDatePicker.InvalidDateFormatMessage')
+    return isValidDate(value) || message;
+  };
+
+  const datePeriodValidation = value => {
+    let message = 'Unexpected Error'     
+    if (props.period === 'month'){
+      message = t('$vuetify.SurfaceDatePicker.InvalidMonthlyDateMessage')
+    }
+    else if (props.period === 'year'){
+      message = t('$vuetify.SurfaceDatePicker.InvalidYearlyDateMessage')
+    }
+    return isValidDatePeriod(value, props.period) || message;
+  };  
+
   const updateDate = (fdate, date) => {
-    date.value = moment(fdate.value, 'YYYY-MM-DD').toDate();
+    if (isValidDate(fdate)){
+      date = moment(fdate, 'YYYY-MM-DD').toDate();  
+    }
   };
 
   const formatDate = (date,fdate) => {
     fdate.value = moment(date.value).format('YYYY-MM-DD')
   };
-
-
 </script>

@@ -14,17 +14,17 @@
   <v-dialog v-model="dialog_del" width="35%">
     <v-card class="text-center">
       <v-card-title class="text-h5">
-        Remove Series
+        {{t('$vuetify.DataExport.RemoveSeries')}}
       </v-card-title>
       <v-card-text class="ml-2">
           <v-form>
             <v-row>
               <v-col class="text-center" cols="6">
-                <h3>Station</h3>
+                <h3>{{t('$vuetify.DataExport.Station')}}</h3>
                 <span>{{getStationTitle(current_item.station)}}</span>
               </v-col>       
               <v-col class="text-center" cols="6">
-                <h3>Variable</h3>
+                <h3>{{t('$vuetify.DataExport.Variable')}}</h3>
                 <span>{{current_item.variable.name}}</span>
               </v-col>                      
             </v-row>
@@ -32,27 +32,27 @@
       </v-card-text>             
       <v-card-actions class="ml-2">
         <v-btn width="50%" variant="flat" color="grey" @click="dialog_del = false">
-          Cancel
+          {{t('$vuetify.DataExport.Cancel')}}
         </v-btn>
         <v-btn width="50%" variant="flat" color="error" @click="dialog_del = false; removeSeries()">
-          Remove
+          {{t('$vuetify.DataExport.Remove')}}
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>  
 
   <form class="ma-5">
-    <h1 class="ma-3 my-10">{{ $t('dataexportDataExport') }}</h1>
+    <h1 class="ma-3 my-10"> {{t('$vuetify.DataExport.DataExport')}} </h1>
 
-    <h3 class="ma-3">{{ $t('dataexportStationFilters') }}</h3>
+    <h3 class="ma-3"> {{t('$vuetify.DataExport.StationFilters')}} </h3>
 
     <v-row class="mx-3" dense justify="start">
       <v-col class="text-center" cols="2">
         <v-switch
-            v-model="filter.byDistrict"
-            color="primary"
-            label="Filter by district"
-            @change="clearDistrict(filter, selected)"
+          v-model="filter.byDistrict"
+          color="primary"
+          :label="t('$vuetify.DataExport.FilterByDistrict')"
+          @change="clearDistrict(filter, selected)"
         ></v-switch> 
       </v-col>      
       <v-col class="text-center" cols="3">
@@ -61,7 +61,7 @@
           item-value="name"
           v-model="selected.district"
           :items="stationDistrictList"
-          label="District"
+          :label="t('$vuetify.DataExport.District')"
           clearable
           :disabled="!filter.byDistrict"
         ></v-autocomplete>
@@ -72,7 +72,7 @@
           item-value="name"
           v-model="selected.watershed"
           :items="stationWatershedList"
-          label="Watershed"
+          :label="t('$vuetify.DataExport.Watershed')"
           clearable
           :disabled="filter.byDistrict"
         ></v-autocomplete>
@@ -83,7 +83,7 @@
           item-value="id"
           v-model="selected.profile"
           :items="stationProfileList"
-          label="Profile"
+          :label="t('$vuetify.DataExport.Profile')"          
           clearable
         ></v-autocomplete>
       </v-col>       
@@ -93,38 +93,38 @@
         <v-switch
           v-model="filter.isActive"
           color="primary"
-          label="Active"
+          :label="t('$vuetify.DataExport.Active')"          
         ></v-switch>              
       </v-col>
       <v-col class="text-center" cols="2">
         <v-switch
           v-model="filter.isAutomatic"
           color="primary"
-          label="Automatic"
+          :label="t('$vuetify.DataExport.Automatic')"          
         ></v-switch>
       </v-col>
       <v-col class="text-center" cols="4">
         <v-autocomplete
           v-model="selected.station"
-          label="Station"
+          :label="t('$vuetify.DataExport.Station')"          
           :items="filteredStationList"
           :item-title="getStationTitle"
           item-value="id"
           clearable
           persistent-hint
-          hint="*Required"
+          :hint="t('$vuetify.DataExport.RequiredHint')"
         ></v-autocomplete>
       </v-col>     
       <v-col class="text-center" cols="4">
         <v-autocomplete
           v-model="selected.variable"
-          label="Variable"
+          :label="t('$vuetify.DataExport.Variable')"          
           :items="filteredVariableList"
           item-title="name"
           item-value="id"
           clearable
           persistent-hint
-          hint="*Required"
+          :hint="t('$vuetify.DataExport.RequiredHint')"
         ></v-autocomplete>
       </v-col>           
     </v-row>
@@ -135,7 +135,7 @@
           append-icon="mdi-magnify-plus"
           @click="addToSeries"
           :disabled="$v.selected.$invalid"
-        > Add Series </v-btn>
+        > {{ t('$vuetify.DataExport.AddSeries')}} </v-btn>
       </v-col>   
     </v-row>
 
@@ -157,18 +157,24 @@
           v-model="selected.data_source"
           item-title="text"                
           :items="data_sources"
-          label="Data Source"
+          :label="t('$vuetify.DataExport.DataSource')"          
           return-object
           clearable
           persistent-hint
-          hint="*Required"
+          :hint="t('$vuetify.DataExport.RequiredHint')"
         ></v-select>
       </v-col>
         <v-col class="text-center"  cols="4" v-if="selected.data_source">
-          <SurfaceDatePicker label="Initial Date" v-model="initial_date"/>
+          <SurfaceDatePicker
+            :label="t('$vuetify.DataExport.InitialDate')"
+            :period="selected.data_source.date_period"            
+            v-model="initial_date"/>
         </v-col>
         <v-col class="text-center"  cols="4" v-if="selected.data_source">
-          <SurfaceDatePicker label="Final Date" v-model="final_date"/>          
+          <SurfaceDatePicker 
+            :label="t('$vuetify.DataExport.FinalDate')"
+            :period="selected.data_source.date_period"
+            v-model="final_date"/>          
         </v-col>
     </v-row>
       <div v-if="selected.data_source">
@@ -178,35 +184,36 @@
           justify="start"
           v-if="['raw_data', 'hourly_summary'].includes(selected.data_source.source)"
         >
-            <v-col class="text-center"  cols="4">
+            <v-col class="text-center"  cols="4" v-if="selected.data_source.source=='raw_data'">
+              <v-select
+                v-model="selected.interval"
+                item-title="symbol"
+                item-value="seconds"
+                :items="filteredIntervalList"
+                :label="t('$vuetify.DataExport.MeasurementInterval')"          
+                persistent-hint
+                :hint="t('$vuetify.DataExport.RequiredHint')"
+              ></v-select>           
             </v-col>
 
+            <v-col class="text-center"  cols="4" v-if="selected.data_source.source!='raw_data'">
+            </v-col>            
+
             <v-col class="text-center" cols="4">
-              <SurfaceTimePicker label="Initial Time" v-model="initial_time"/>                    
+              <SurfaceTimePicker
+                :label="t('$vuetify.DataExport.InitialTime')"
+                :step="selected.interval"          
+                v-model="initial_time"/>                    
             </v-col>  
                    
             <v-col class="text-center"  cols="4">
-              <SurfaceTimePicker label="Final Time"  v-model="final_time"/>
+              <SurfaceTimePicker
+                :label="t('$vuetify.DataExport.FinalTime')"                
+                :step="selected.interval"
+                v-model="final_time"/>
             </v-col>
         </v-row>
       </div>
-    <v-row class="mx-3" dense justify="end">
-      <v-col align="end" cols="3">
-        <v-btn
-          color="primary"
-          append-icon="mdi-database-search"
-          @click="checkData"
-          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
-        > Check Data Availability </v-btn>
-      </v-col>  
-      <v-col align="end" cols="2">
-        <v-btn
-          color="primary"
-          append-icon="mdi-send"
-          :disabled="(!selected.data_source) || (data_table.series.length === 0)"
-        > Generate CSV </v-btn>
-      </v-col>   
-    </v-row>
   </form>
 
   <form class="ma-5">
@@ -223,6 +230,7 @@
               width="25%"
               :color="getColor(item.percentage)"
               class="text-center"
+              :loading="loading.value"
             >
               {{item.percentage}} %
             </v-card>            
@@ -246,6 +254,28 @@
       </v-data-table>
     </v-row>
   </form>
+
+  <form class="ma-5">
+    <v-row class="mx-3" dense justify="end">
+      <v-col align="end" cols="2">
+        <v-select
+          v-model="selected.file_format"
+          item-title="text"
+          item-value='format'          
+          :items="file_formats"
+          :label="t('$vuetify.DataExport.FileFormat')"
+        ></v-select>    
+      </v-col>      
+      <v-col align="end" cols="2">
+        <v-btn
+          color="primary"
+          append-icon="mdi-send"
+          @click="queryData"
+          :disabled="(!selected.data_source) || (data_table.series.length === 0) || (!datetimeRangeValidation)"
+        > {{t('$vuetify.DataExport.DownloadFile')}} </v-btn>
+      </v-col>   
+    </v-row>
+  </form>  
 </template>
 
 <script setup>
@@ -256,9 +286,14 @@
   import { required } from '@vuelidate/validators';
   import { useVuelidate } from '@vuelidate/core';
 
+  import { useLocale } from 'vuetify'
+  const { t } = useLocale()  
+
+  const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
+  const PYGEOAPI_URL = import.meta.env.VITE_BACKEND_PYGEOAPI_BASE_URL
 
   const dialog_del = ref(false)
-    
+
   const station = ref(null)
   const variable = ref(null)
 
@@ -275,6 +310,8 @@
     district: null,
     watershed: null,
     data_source: null,
+    interval: 900,
+    file_format: 'csv',
   });  
 
   const rules = {
@@ -285,8 +322,6 @@
   };
 
   const $v = useVuelidate(rules, { selected });
-
-  const BASE_URL  = import.meta.env.VITE_BACKEND_BASE_URL 
 
   const loading = ref(false);
   const request_error = ref(false);
@@ -301,46 +336,53 @@
   const stationDistrictList = ref([])
   const stationWatershedList = ref([])
   const stationProfileList = ref([])
+  const intervalList = ref([])
 
   const data_sources = ref([
-    {value: 0, text: "Raw data", source: "raw_data"},
-    {value: 1, text: "Hourly summary", source: "hourly_summary"},
-    {value: 2, text: "Daily summary", source: "daily_summary"},
-    {value: 3, text: "Monthly summary", source: "monthly_summary"},
-    {value: 4, text: "Yearly summary", source: "yearly_summary"},
+    {value: 0, text: t('$vuetify.DataExport.RawData'), source: "raw_data", date_period: 'day'},
+    {value: 1, text: t('$vuetify.DataExport.HourlySummary'), source: "hourly_summary", date_period: 'day'},
+    {value: 2, text: t('$vuetify.DataExport.DailySummary'), source: "daily_summary", date_period: 'day'},
+    {value: 3, text: t('$vuetify.DataExport.MonthlySummary'), source: "monthly_summary", date_period: 'month'},
+    {value: 4, text: t('$vuetify.DataExport.YearlySummary'), source: "yearly_summary", date_period: 'year'},
+  ])
+
+  const file_formats = ref([
+    {text: "CSV ", format: "csv"},
+    {text: "Excel", format: "excel"},
+    {text: "R-Instat", format: "rinstat"},
   ])
 
   const current_item = ref(null)
 
   const data_table = ref({
     headers: [
-      { title: 'Station',
+      { title: computed(() => t('$vuetify.DataExport.Station')),
         align: 'center',
         key: 'station',
         value: item => getStationTitle(item.station)
       },
-      { title: 'Variable',
+      { title: computed(() => t('$vuetify.DataExport.Variable')),
         align: 'center',
         key: 'variable',
         value: 'variable.name'
       },
-      { title: 'First Date',
+      { title: computed(() => t('$vuetify.DataExport.FirstDate')),
         align: 'center',
         key: 'first_date',
         value: 'first_date'
       },
-      { title: 'Last Date',
+      { title: computed(() => t('$vuetify.DataExport.LastDate')),
         align: 'center',
         key: 'last_date',
         value: 'last_date'
       },            
       {
-        title: '% Available Dates',
+        title: computed(() => t('$vuetify.DataExport.AvailableDates')),
         align: 'center',
         key: 'percentage',
       },      
       {
-        title: 'Action',
+        title: computed(() => t('$vuetify.DataExport.Action')),
         align: 'center',
         key: 'action'
       },
@@ -355,6 +397,64 @@
 
   const final_date = ref(now.add(1, 'days').format("YYYY-MM-DD"));
   const final_time = ref('00:00');
+
+  onMounted( async () => {
+    await fetchData(`${BASE_URL}/api/stations/?format=json`, stationList)
+
+    await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
+
+    // await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
+
+    await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
+
+    await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
+
+    await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)
+    
+    await fetchData(`${BASE_URL}/api/intervals/?format=json`, intervalList)
+
+    console.log(intervalList)
+  });
+
+  const datetimeRangeValidation = computed(() => {
+    let intervalInMInutes = selected.value.interval / 60
+    let date_period = selected.value.data_source.date_period
+
+    // Validating Initial Date
+    if (!isValidDate(initial_date.value) || !isValidDatePeriod(initial_date.value, date_period)){
+      return false
+    }    
+
+    // Validating Final Date
+    if (!isValidDate(final_date.value) || !isValidDatePeriod(final_date.value, date_period)){
+      return false
+    }
+
+    // Validating Initial and Final Time Formats
+    if (!isValidTime(initial_time.value) || !isValidTime(final_time.value)){
+      return false
+    }
+
+    if (['raw_data', 'hourly_summary'].includes(selected.value.data_source.source)){
+      // Validating Initial Time Step
+      if (!isValidTimeStep(initial_time.value, intervalInMInutes)){
+        return false
+      }
+
+      // Validating Final Time Step
+      if (!isValidTimeStep(final_time.value, intervalInMInutes)){
+        return false
+      }
+    }
+
+    return true
+  });  
+
+  const filteredIntervalList = computed(() => {
+    return intervalList.value.filter(
+      interval => interval.seconds < 3600 && interval.seconds > 60
+    )
+  });
 
   const filteredStationList = computed(() => {
     let filteredStations = stationList.value
@@ -391,20 +491,6 @@
     return filteredStations
   });
 
-  onMounted( async () => {
-    await fetchData(`${BASE_URL}/api/stations/?format=json`, stationList)
-
-    await fetchData(`${BASE_URL}/api/variables/?format=json`, variableList)
-
-    // await fetchData(`${BASE_URL}/api/stations_variables/?format=json`, stationVariableList)
-
-    await fetchData(`${BASE_URL}/api/administrative_regions/?format=json`, stationDistrictList)
-
-    await fetchData(`${BASE_URL}/api/watersheds/?format=json`, stationWatershedList)    
-
-    await fetchData(`${BASE_URL}/api/station_profiles/?format=json`, stationProfileList)    
-  });
-
   const filteredVariableList = computed(() => {
     if (!selected.value.station){
       return []
@@ -426,15 +512,59 @@
       )      
     }
     return filteredVariables;
-  });   
-
-
-
+  });
 
   watch(() => selected.value.data_source, (newValue, oldValue) => {
     clearAvailableData()
-  });
+    if (selected.value.data_source != null){
+      if (!isValidTime(initial_time.value)){
+        initial_time.value='00:00'
+      }
+      if (!isValidTime(final_time.value)){
+        final_time.value='00:00'
+      }
+      if (!isValidDate(initial_date.value)){
+        initial_date.value=now.format("YYYY-MM-DD")
+      }
+      if (!isValidDate(final_date.value)){
+        final_date.value=now.add(1, 'days').format("YYYY-MM-DD")
+      }        
 
+
+      if (selected.value.data_source.source==='raw_data'){
+        selected.value.interval = 900
+      }
+      else if (selected.value.data_source.source==='hourly_summary'){
+        let [ini_hours, ini_minutes] = initial_time.value.split(':');
+        initial_time.value = `${ini_hours}:00`;
+
+        let [fin_hours, fin_minutes] = final_time.value.split(':');
+        final_time.value = `${fin_hours}:00`;
+
+        selected.value.interval = 3600
+      }
+      else if (selected.value.data_source.source==='monthly_summary'){
+        let [ini_year, ini_month, ini_day] = initial_date.value.split('-');
+        initial_date.value = `${ini_year}-${ini_month}-01`;
+
+        let [fin_year, fin_month, fin_day] = final_date.value.split('-');
+        final_date.value = `${fin_year}-${fin_month}-01`;
+      }
+      else if (selected.value.data_source.source==='yearly_summary'){
+        let [ini_year, ini_month, ini_day] = initial_date.value.split('-');
+        initial_date.value = `${ini_year}-01-01`;
+
+        let [fin_year, fin_month, fin_day] = final_date.value.split('-');
+        final_date.value = `${fin_year}-01-01`;       
+      }       
+    }
+
+    if (selected.value.data_source!=null && data_table.value.series.length > 0){
+      if (datetimeRangeValidation.value){
+        checkData()
+      }
+    }
+  });
 
   watch(() => selected.value.station, (newValue, oldValue) => {
     if (newValue === null){
@@ -447,7 +577,43 @@
 
   watch([initial_date, initial_time, final_date, final_time], () => {
     clearAvailableData()
+    if (selected.value.data_source!=null && data_table.value.series.length > 0){
+      if (datetimeRangeValidation.value){
+        checkData()
+      }
+    }
   });
+
+  const isValidDate = (dateString) => {
+      return moment(dateString, 'YYYY-MM-DD', true).isValid();
+  }
+
+  const isValidDatePeriod = (dateString, period) => {
+    if (!isValidDate(dateString)){
+      return false
+    }
+
+    let date_moment = moment(dateString, 'YYYY-MM-DD')
+
+    if (period === 'year'){
+      return (date_moment.format('MM') === '01' && date_moment.format('DD') === '01')
+    }
+    else if (period === 'month'){
+      return (date_moment.format('DD') === '01')
+    }
+
+    return true
+  }      
+
+  const isValidTime = (timeString) => {
+      return moment(timeString, 'HH:mm', true).isValid();
+  }
+
+  const isValidTimeStep = (timeString, interval) => {
+    let [hours, minutes] = timeString.split(':');
+    return minutes % interval === 0
+  }
+
 
   const fetchData = async (url, variable) => {
     loading.value = true
@@ -478,9 +644,12 @@
   };
 
   const clearAvailableData = () =>{
-    data_table.value.series.forEach(series => series['percentage'] = null);
+    data_table.value.series.forEach(series => {
+      series['percentage'] = null;
+      series['first_date'] = null;
+      series['last_date'] = null;
+    })
   }
-
 
   const getVariables = async (station_id) => {
     loading.value = true
@@ -507,7 +676,9 @@
       profile: null,
       district: null,
       watershed: null,
+      interval: selected.value.interval,
       data_source: selected.value.data_source,
+      file_format: selected.value.file_format,
     }
   }
 
@@ -565,7 +736,9 @@
     if(!dictExistsKeys(data_table.value.series, new_entry, ['station', 'variable'])){
       data_table.value.series.push(new_entry);
       if (selected.value.data_source) {
-        checkSeriesData();
+        if (datetimeRangeValidation.value){
+          checkSeriesData();
+        }
       }
       clearSelected();
     }    
@@ -592,15 +765,15 @@
 
   const updateDataTable = (new_data) =>{
     for (let dict1 of data_table.value.series) {
-        for (let dict2 of new_data) {
-            if ((dict1["station"]["id"] === dict2["station_id"]) &&
-               (dict1["variable"]["id"]  === dict2["variable_id"])){
-                dict1["first_date"] = dict2["first_date"];
-                dict1["last_date"] = dict2["last_date"];
-                dict1["percentage"] = dict2["percentage"];
-                break;
-            }
+      for (let dict2 of new_data) {
+        if ((dict1["station"]["id"] === dict2["station_id"]) &&
+           (dict1["variable"]["id"]  === dict2["variable_id"])){
+          dict1["first_date"] = dict2["first_date"];
+          dict1["last_date"] = dict2["last_date"];
+          dict1["percentage"] = dict2["percentage"];
+          break;
         }
+      }
     }
   }
 
@@ -671,6 +844,58 @@
     loading.value = false;
   }
 
+  const queryData = async () => {
+    loading.value = true;
+
+    let url = `${BASE_URL}/api/data_export/`;
+
+    let series = data_table.value.series.map(row => ({
+      'station_id': row.station.id,
+      'variable_id': row.variable.id
+    }));
+
+    let data = {
+      'initial_date': initial_date.value,
+      'initial_time': initial_time.value,
+      'final_date': final_date.value,
+      'final_time': final_time.value,
+      'data_source': selected.value.data_source.source,
+      'file_format': selected.value.file_format,
+      'interval': selected.value.interval,
+      'series': series,
+    };
+
+    await axios({
+      url: url,
+      method: 'POST',
+      data: data,
+      responseType: 'blob',
+      headers: {
+        'Authorization': `Token ${import.meta.env.VITE_BACKEND_TOKEN}`,
+        'Content-Type': 'application/json',
+      },       
+    }).then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      if (selected.value.file_format=='csv'){
+        link.setAttribute('download', 'data.csv');
+      }
+      else if (selected.value.file_format=='excel'){
+        link.setAttribute('download', 'data.xlsx');
+      }
+      else if (selected.value.file_format=='rinstat'){
+        link.setAttribute('download', 'data.tsv');
+      }
+      document.body.appendChild(link);
+      link.click();
+    }).catch(err => {
+      request_error.value = true;
+      console.log(err)
+    });
+    loading.value = false;   
+  }
+
   const clearDistrict = (filter, selected) => {
     if (filter.byDistrict){
       selected.watershed = null;
@@ -709,4 +934,3 @@
   height: 100vh; /* Adjust as needed */
 }
 </style>
-
